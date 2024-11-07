@@ -5,8 +5,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-import java.util.Date;
-
 public class UserDto {
     private long id;
 
@@ -27,11 +25,9 @@ public class UserDto {
     @NotBlank(message = "Name is required")
     private String name;
 
-    @NotBlank(message = "Address is required")
-    private String address;
+    private AddressDto address;
 
     private UserRole role;
-
     private boolean isActive;
     private String activationToken;
 
@@ -43,52 +39,44 @@ public class UserDto {
         this.id = id;
     }
 
-    public String getEmail() {
+    public @Email(message = "Email should be valid") @NotBlank(message = "Email is required") String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(@Email(message = "Email should be valid") @NotBlank(message = "Email is required") String email) {
         this.email = email;
     }
 
-    public String getUsername() {
+    public @NotBlank(message = "Username is required") String getUsername() {
         return username;
     }
 
-    public void setUsername(String username) {
+    public void setUsername(@NotBlank(message = "Username is required") String username) {
         this.username = username;
     }
 
-    public String getPassword() {
+    public @NotBlank(message = "Password is required") @Size(min = 8, message = "Password should be at least 8 characters long") String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(@NotBlank(message = "Password is required") @Size(min = 8, message = "Password should be at least 8 characters long") String password) {
         this.password = password;
     }
 
-    public String getPasswordConfirm() {
+    public @NotBlank(message = "Password confirmation is required") String getPasswordConfirm() {
         return passwordConfirm;
     }
 
-    public void setPasswordConfirm(String passwordConfirm) {
+    public void setPasswordConfirm(@NotBlank(message = "Password confirmation is required") String passwordConfirm) {
         this.passwordConfirm = passwordConfirm;
     }
 
-    public String getName() {
+    public @NotBlank(message = "Name is required") String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotBlank(message = "Name is required") String name) {
         this.name = name;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
     }
 
     public UserRole getRole() {
@@ -113,5 +101,13 @@ public class UserDto {
 
     public void setActivationToken(String activationToken) {
         this.activationToken = activationToken;
+    }
+
+    public AddressDto getAddress() {
+        return address;
+    }
+
+    public void setAddress(AddressDto address) {
+        this.address = address;
     }
 }

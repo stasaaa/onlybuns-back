@@ -5,11 +5,14 @@ import com.isa.onlybuns_back.irepository.IUserRepository;
 import com.isa.onlybuns_back.iservice.IAuthenticationService;
 import com.isa.onlybuns_back.mapper.UserMapper;
 import com.isa.onlybuns_back.model.User;
+import com.isa.onlybuns_back.model.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+
+import javax.security.sasl.AuthenticationException;
 import java.util.*;
 
 @Service
@@ -26,14 +29,15 @@ public class AuthenticationService implements IAuthenticationService {
     }
 
     @Override
-    public boolean login(UserDto userDto) {
+    public UserDto login(UserDto userDto){
         User user = userRepository.findByEmail(userDto.getEmail());
 
         if (user != null && user.getPassword().equals(userDto.getPassword())) {
             user.setLastLogin(new Date());
-            return true;
+            return userMapper.userToUserDTO(user);
         }
-        return false;
+
+        throw new IllegalArgumentException("Invalid email or password");
     }
 
     @Override
@@ -53,15 +57,24 @@ public class AuthenticationService implements IAuthenticationService {
             throw new IllegalArgumentException("Passwords do not match.");
         }
 
+        if (userRepository.findByEmail(userDto.getEmail()) != null) {
+            throw new IllegalArgumentException("Email address already in use.");
+        }
+
+        if(userRepository.findByUsername(userDto.getUsername()) != null) {
+            throw new IllegalArgumentException("Username already in use.");
+        }
+
         User user = userMapper.userDTOToUser(userDto);
         user.setActive(false);
+        user.setUserRole(UserRole.ORDINARY);
 
         String token = UUID.randomUUID().toString();
         user.setActivationToken(token);
 
         userRepository.save(user);
 
-        sendActivationEmail(user.getEmail(), token);
+//        sendActivationEmail(user.getEmail(), token);
 
         return true;
     }

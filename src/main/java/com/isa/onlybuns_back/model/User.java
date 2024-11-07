@@ -55,8 +55,7 @@ public class User {
     private UserRole userRole;
 
     @Column(
-            name = "last_login",
-            nullable = false
+            name = "last_login"
     )
     private Date lastLogin;
 
@@ -72,11 +71,14 @@ public class User {
     )
     private String activationToken;
 
+    @Embedded
+    private Address address;
+
     public User() {
     }
 
-    public User(String email, String username, String password, UserRole userRole, Date lastLogin,
-                boolean isActive, String activationToken) {
+    public User(String email, String username, String password, UserRole userRole,
+                Date lastLogin, boolean isActive, String activationToken, Address address) {
         this.email = email;
         this.username = username;
         this.password = password;
@@ -84,10 +86,11 @@ public class User {
         this.lastLogin = lastLogin;
         this.isActive = isActive;
         this.activationToken = activationToken;
+        this.address = address;
     }
 
     public User(long id, String email, String username, String password, UserRole userRole,
-                Date lastLogin, boolean isActive, String activationToken) {
+                Date lastLogin, boolean isActive, String activationToken, Address address) {
         this.id = id;
         this.email = email;
         this.username = username;
@@ -96,6 +99,7 @@ public class User {
         this.lastLogin = lastLogin;
         this.isActive = isActive;
         this.activationToken = activationToken;
+        this.address = address;
     }
 
     public long getId() {
@@ -162,17 +166,11 @@ public class User {
         this.activationToken = activationToken;
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", email='" + email + '\'' +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", userRole=" + userRole +
-                ", lastLogin=" + lastLogin +
-                ", isActive=" + isActive +
-                ", activationToken='" + activationToken + '\'' +
-                '}';
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
     }
 }
