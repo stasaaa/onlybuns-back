@@ -4,8 +4,12 @@ import com.isa.onlybuns_back.model.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
 public class UserDto {
+    @Setter
+    @Getter
     private long id;
 
     @Email(message = "Email should be valid")
@@ -25,19 +29,17 @@ public class UserDto {
     @NotBlank(message = "Name is required")
     private String name;
 
+    @Setter
+    @Getter
     private AddressDto address;
 
+    @Setter
+    @Getter
     private UserRole role;
     private boolean isActive;
+    @Setter
+    @Getter
     private String activationToken;
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
 
     public @Email(message = "Email should be valid") @NotBlank(message = "Email is required") String getEmail() {
         return email;
@@ -79,14 +81,6 @@ public class UserDto {
         this.name = name;
     }
 
-    public UserRole getRole() {
-        return role;
-    }
-
-    public void setRole(UserRole role) {
-        this.role = role;
-    }
-
     public boolean isActive() {
         return isActive;
     }
@@ -95,19 +89,4 @@ public class UserDto {
         isActive = active;
     }
 
-    public String getActivationToken() {
-        return activationToken;
-    }
-
-    public void setActivationToken(String activationToken) {
-        this.activationToken = activationToken;
-    }
-
-    public AddressDto getAddress() {
-        return address;
-    }
-
-    public void setAddress(AddressDto address) {
-        this.address = address;
-    }
 }
