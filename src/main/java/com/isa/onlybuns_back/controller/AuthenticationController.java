@@ -1,5 +1,7 @@
 package com.isa.onlybuns_back.controller;
 
+import com.isa.onlybuns_back.dto.AuthenticationRequest;
+import com.isa.onlybuns_back.dto.AuthenticationResponse;
 import com.isa.onlybuns_back.dto.UserDto;
 import com.isa.onlybuns_back.service.AuthenticationService;
 import jakarta.validation.Valid;
@@ -21,32 +23,27 @@ public class AuthenticationController {
         this.authentificationService = authentificationService;
     }
 
-    @GetMapping
-    public ResponseEntity<Collection<UserDto>> GetAll() {
-        var ret = authentificationService.getAll();
+    @PostMapping("login")
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest authenticationRequest) {
+        var ret = authentificationService.login(authenticationRequest);
         return ResponseEntity.ok(ret);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<UserDto> login(@RequestBody UserDto userDto){
-        var ret = authentificationService.login(userDto);
-        return ResponseEntity.ok(ret);
-    }
-
-    @PostMapping
+    @PostMapping("register")
     public ResponseEntity<Boolean> register(@Valid @RequestBody UserDto userDto) {
         var ret = authentificationService.register(userDto);
         return ResponseEntity.ok(ret)  ;
     }
 
-    @GetMapping("/activate")
-    public ResponseEntity<String> activateAccount(@RequestParam String token) {
-        String ret;
-        if(this.authentificationService.activateAccount(token)) {
-            ret = "Account activated";
-        } else {
-            ret = "Account not activated";
-        }
+    @GetMapping("activate")
+    public ResponseEntity<AuthenticationResponse> activateAccount(@RequestParam String token) {
+        var ret = this.authentificationService.activateAccount(token);
+        return ResponseEntity.ok(ret);
+    }
+
+    @GetMapping("userDetails")
+    public ResponseEntity<UserDto> getUserDetails(@RequestParam String email) {
+        var ret = this.authentificationService.userDetails(email);
         return ResponseEntity.ok(ret);
     }
 }

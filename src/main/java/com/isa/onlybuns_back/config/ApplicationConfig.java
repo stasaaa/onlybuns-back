@@ -15,7 +15,16 @@ public class ApplicationConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        //TODO ako promenim u Optional<User> u repo treba staviti throws
-         return userRepository::findByEmail;
+        return username -> {
+            UserDetails user = userRepository.findByUsername(username);
+            if (user == null) {
+                UserDetails userEmail = userRepository.findByEmail(username);
+                if(userEmail != null) {
+                    return userEmail;
+                }
+                throw new UsernameNotFoundException("User not found: " + username);
+            }
+            return user;
+        };
     }
 }
