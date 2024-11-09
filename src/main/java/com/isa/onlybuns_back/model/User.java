@@ -1,8 +1,16 @@
 package com.isa.onlybuns_back.model;
 
 import jakarta.persistence.*;
-import java.util.Date;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.*;
+
+@Getter
+@Setter
 @Entity(name = "User")
 @Table(
         name = "Users",
@@ -11,7 +19,7 @@ import java.util.Date;
                 @UniqueConstraint(name = "username_unique", columnNames = "username")
         }
 )
-public class User {
+public class User implements UserDetails {
     @Id
     @SequenceGenerator(
             name = "user_sequence",
@@ -42,12 +50,26 @@ public class User {
     )
     private String username;
 
+    // Assign the encoded password
     @Column(
             name = "user_password",
             nullable = false
     )
     private String password;
 
+    @Column(
+            name = "first_name",
+            nullable = false
+    )
+    private String firstName;
+
+    @Column(
+            name = "last_name",
+            nullable = false
+    )
+    private String lastName;
+
+    @Enumerated(EnumType.STRING)
     @Column(
             name = "user_role",
             nullable = false
@@ -77,11 +99,13 @@ public class User {
     public User() {
     }
 
-    public User(String email, String username, String password, UserRole userRole,
-                Date lastLogin, boolean isActive, String activationToken, Address address) {
+    public User(String email, String username, String password, String firstName, String lastName,
+                UserRole userRole, Date lastLogin, boolean isActive, String activationToken, Address address) {
         this.email = email;
         this.username = username;
         this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.userRole = userRole;
         this.lastLogin = lastLogin;
         this.isActive = isActive;
@@ -89,12 +113,15 @@ public class User {
         this.address = address;
     }
 
-    public User(long id, String email, String username, String password, UserRole userRole,
-                Date lastLogin, boolean isActive, String activationToken, Address address) {
+    public User(long id, String email, String username, String password, String firstName,
+                String lastName, UserRole userRole, Date lastLogin, boolean isActive,
+                String activationToken, Address address) {
         this.id = id;
         this.email = email;
         this.username = username;
         this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.userRole = userRole;
         this.lastLogin = lastLogin;
         this.isActive = isActive;
@@ -102,75 +129,28 @@ public class User {
         this.address = address;
     }
 
-    public long getId() {
-        return id;
+    @Override
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
     }
 
-    public void setId(long id) {
-        this.id = id;
+    @Override
+    public boolean isAccountNonLocked() {
+        return UserDetails.super.isAccountNonLocked();
     }
 
-    public String getEmail() {
-        return email;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return UserDetails.super.isCredentialsNonExpired();
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    @Override
+    public boolean isEnabled() {
+        return this.isActive;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public UserRole getUserRole() {
-        return userRole;
-    }
-
-    public void setUserRole(UserRole userRole) {
-        this.userRole = userRole;
-    }
-
-    public Date getLastLogin() {
-        return lastLogin;
-    }
-
-    public void setLastLogin(Date lastLogin) {
-        this.lastLogin = lastLogin;
-    }
-
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
-    public String getActivationToken() {
-        return activationToken;
-    }
-
-    public void setActivationToken(String activationToken) {
-        this.activationToken = activationToken;
-    }
-
-    public Address getAddress() {
-        return address;
-    }
-
-    public void setAddress(Address address) {
-        this.address = address;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return new ArrayList<GrantedAuthority>(this.userRole.getGrantedAuthority());
     }
 }

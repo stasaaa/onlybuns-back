@@ -1,34 +1,36 @@
 package com.isa.onlybuns_back.service;
 
 import com.isa.onlybuns_back.dto.UserDto;
-import com.isa.onlybuns_back.irepository.IUserRepository;
-import com.isa.onlybuns_back.iservice.IAuthenticationService;
+import com.isa.onlybuns_back.repository.UserRepository;
 import com.isa.onlybuns_back.mapper.UserMapper;
 import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.model.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
-import javax.security.sasl.AuthenticationException;
 import java.util.*;
 
 @Service
-public class AuthenticationService implements IAuthenticationService {
-    private final IUserRepository userRepository;
+public class AuthenticationService {
+    private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final JavaMailSender mailSender;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public AuthenticationService(IUserRepository userRepository, UserMapper userMapper, JavaMailSender mailSender) {
+    public AuthenticationService(UserRepository userRepository, UserMapper userMapper,
+                                 JavaMailSender mailSender, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.mailSender = mailSender;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    @Override
+
     public UserDto login(UserDto userDto){
         User user = userRepository.findByEmail(userDto.getEmail());
 
@@ -40,7 +42,6 @@ public class AuthenticationService implements IAuthenticationService {
         throw new IllegalArgumentException("Invalid email or password");
     }
 
-    @Override
     public boolean logout(UserDto userDto) {
         User user = userRepository.findByEmail(userDto.getEmail());
 
@@ -51,7 +52,6 @@ public class AuthenticationService implements IAuthenticationService {
         return false;
     }
 
-    @Override
     public boolean register(UserDto userDto) {
         if (!userDto.getPassword().equals(userDto.getPasswordConfirm())) {
             throw new IllegalArgumentException("Passwords do not match.");
@@ -67,7 +67,8 @@ public class AuthenticationService implements IAuthenticationService {
 
         User user = userMapper.userDTOToUser(userDto);
         user.setActive(false);
-        user.setUserRole(UserRole.ORDINARY);
+        user.setUserRole(UserRole.REGISTERED);
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
         String token = UUID.randomUUID().toString();
         user.setActivationToken(token);
@@ -89,7 +90,6 @@ public class AuthenticationService implements IAuthenticationService {
         mailSender.send(message);
     }
 
-    @Override
     public boolean activateAccount(String token) {
         User user = userRepository.findByActivationToken(token);
         if (user != null && !user.isActive()) {
@@ -102,7 +102,6 @@ public class AuthenticationService implements IAuthenticationService {
         return false;
     }
 
-    @Override
     public Collection<UserDto> getAll() {
         List<User> users = userRepository.findAll();
         return userMapper.usersToUserDTOs(users);
