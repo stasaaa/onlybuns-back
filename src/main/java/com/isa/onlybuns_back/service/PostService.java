@@ -1,8 +1,8 @@
 package com.isa.onlybuns_back.service;
 
+import com.isa.onlybuns_back.iservice.IPostService;
 import com.isa.onlybuns_back.model.Post;
-import com.isa.onlybuns_back.irepository.IPostRepository;
-import com.isa.onlybuns_back.iservice.IPostService;  // Dodajte import za interfejs
+import com.isa.onlybuns_back.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +13,7 @@ import java.util.Optional;
 public class PostService implements IPostService {
 
     @Autowired
-    private IPostRepository postRepository;
+    private PostRepository postRepository;
 
     @Override
     public Optional<Post> getById(Long id) {
