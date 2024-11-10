@@ -95,6 +95,9 @@ public class User implements UserDetails {
     @Embedded
     private Address address;
 
+    @OneToMany // user have multipe posts
+    private List<Post> posts;
+
     public User() {
     }
 

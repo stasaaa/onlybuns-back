@@ -86,7 +86,11 @@ public class AuthenticationService {
         user.setEmail(userDto.getEmail());
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
-        user.setAddress(addressMapper.addressDtoToAddress(userDto.getAddress()));
+        user.getAddress().setCountry(userDto.getAddress().getCountry());
+        user.getAddress().setCity(userDto.getAddress().getCity());
+        user.getAddress().setPostalCode(userDto.getAddress().getPostalCode());
+        user.getAddress().setStreet(userDto.getAddress().getStreet());
+        user.getAddress().setNumber(userDto.getAddress().getNumber());
         user.setActive(false);
         user.setUserRole(UserRole.REGISTERED);
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
