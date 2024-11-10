@@ -45,7 +45,16 @@ public class AuthenticationService {
 
     public UserDto userDetails(String email) {
         User user = userRepository.findByEmail(email);
-        return userMapper.userToUserDTO(user);
+        UserDto userdto = new UserDto();
+        userdto.setId(user.getId());
+        userdto.setUsername(user.getUsername());
+        userdto.setEmail(user.getEmail());
+        userdto.setFirstName(user.getFirstName());
+        userdto.setLastName(user.getLastName());
+        userdto.setActive(user.isActive());
+        userdto.setAddress(addressMapper.addressToAddressDto(user.getAddress()));
+        userdto.setUserRole(user.getUserRole());
+        return userdto;
     }
 
     public AuthenticationResponse login(AuthenticationRequest authenticationRequest){
