@@ -1,6 +1,8 @@
 package com.isa.onlybuns_back.model;
 
 import jakarta.persistence.*;
+
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -8,7 +10,7 @@ import java.util.List;
 public class Post {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Column(nullable = false)
@@ -21,23 +23,27 @@ public class Post {
     private String location; // If you add a Location class, replace this with a Location object
 
     @Column
+    private Date creationTime;
+
+    @Column
     private int likes;
 
-    @Column(name = "user_id", nullable = false)
-    private long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "post_id") // Foreign key to link comments with the post
     private List<Comment> comments;
 
     // Constructors
-    public Post(Long id, String description, String image, String location, int likes, long userId, List<Comment> comments) {
+    public Post(Long id, String description, String image, String location, Date creationTime, int likes, User user, List<Comment> comments) {
         this.id = id;
         this.description = description;
         this.image = image;
         this.location = location;
+        this.creationTime = creationTime;
         this.likes = likes;
-        this.userId = userId;
+        this.user = user;
         this.comments = comments;
     }
 
@@ -77,6 +83,10 @@ public class Post {
         this.location = location;
     }
 
+    public Date getCreationTime() { return creationTime; }
+
+    public void setCreationTime(Date creationTime) { this.creationTime = creationTime; }
+
     public int getLikes() {
         return likes;
     }
@@ -85,12 +95,12 @@ public class Post {
         this.likes = likes;
     }
 
-    public long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(long userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public List<Comment> getComments() {

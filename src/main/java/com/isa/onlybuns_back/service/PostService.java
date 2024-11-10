@@ -6,6 +6,7 @@ import com.isa.onlybuns_back.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +28,7 @@ public class PostService implements IPostService {
 
     @Override
     public Post create(Post post) {
+        post.setCreationTime(new Date());
         return postRepository.save(post);
     }
 
@@ -42,7 +44,7 @@ public class PostService implements IPostService {
             post.setImage(postDetails.getImage());
             post.setLocation(postDetails.getLocation());
             post.setLikes(postDetails.getLikes());
-            post.setUserId(postDetails.getUserId());
+            post.setUser(postDetails.getUser());
             post.setComments(postDetails.getComments());
             return postRepository.save(post);
         });

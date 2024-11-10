@@ -11,11 +11,19 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    /*@Column(name = "user_id", nullable = false)
+    private Long userId;*/
 
-    @Column(name = "post_id", nullable = false)
-    private Long postId;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    /*@Column(name = "post_id", nullable = false)
+    private Long postId;*/
+
+    @ManyToOne
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
 
     @Column(nullable = false, length = 500)
     private String content;
@@ -27,10 +35,10 @@ public class Comment {
     // Constructors
     public Comment() {}
 
-    public Comment(Long id, Long userId, Long postId, String content, Date creationTime) {
+    public Comment(Long id, User user, Post post, String content, Date creationTime) {
         this.id = id;
-        this.userId = userId;
-        this.postId = postId;
+        this.user= user;
+        this.post = post;
         this.content = content;
         this.creationTime = creationTime;
     }
@@ -44,20 +52,20 @@ public class Comment {
         this.id = id;
     }
 
-    public Long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
-    public Long getPostId() {
-        return postId;
+    public Post getPost() {
+        return post;
     }
 
-    public void setPostId(Long postId) {
-        this.postId = postId;
+    public void setPost(Post post) {
+        this.post = post;
     }
 
     public String getContent() {
