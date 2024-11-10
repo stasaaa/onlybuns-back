@@ -17,9 +17,9 @@ import java.util.function.Function;
 @Service
 public class JWTService {
 
-    private static final String SECRET_KEY = "Xl05DpK9ESCLDRRsYtx2F8QH1Ddg8VYj";
+    private static final String SECRET_KEY = "YXR0ZW1wdHRoZXJlZm9yZWVhcnRoZGVjbGFyZWR0cm91Ymxlc3RyaXBiZWxvd2Rvb3I=";
 
-    public String  extractUserEmail(String token) {
+    public String  extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -43,7 +43,7 @@ public class JWTService {
     }
 
     public String generateToken(Map<String, Object> extractClaims, UserDetails userDetails) {
-        String email = ((CustomeUserDetails) userDetails).getEmail();
+        String email = userDetails.getUsername();
 
         return Jwts
                 .builder()
@@ -60,9 +60,9 @@ public class JWTService {
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String userEmail = extractUserEmail(token);
+        final String userEmail = extractUsername(token);
         //TODO za sledece kt - ovde se dodaje isTokenExpire
-        return (userEmail.equals(((CustomeUserDetails) userDetails).getEmail()));
+        return (userEmail.equals(userDetails.getUsername()));
     }
 
     private boolean isTokenExpired(String token) {

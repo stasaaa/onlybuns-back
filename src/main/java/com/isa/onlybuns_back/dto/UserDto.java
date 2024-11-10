@@ -7,9 +7,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+@Getter
+@Setter
 public class UserDto {
-    @Setter
-    @Getter
     private long id;
 
     @Email(message = "Email should be valid")
@@ -23,22 +23,21 @@ public class UserDto {
     @Size(min = 8, message = "Password should be at least 8 characters long")
     private String password;
 
+    @NotBlank(message = "First name is required")
+    private String firstName;
+
+    @NotBlank(message = "Last name is required")
+    private String lastName;
+
     @NotBlank(message = "Password confirmation is required")
     private String passwordConfirm;
 
-    @NotBlank(message = "Name is required")
-    private String name;
-
-    @Setter
-    @Getter
     private AddressDto address;
 
-    @Setter
-    @Getter
-    private UserRole role;
+    private UserRole userRole;
+
     private boolean isActive;
-    @Setter
-    @Getter
+
     private String activationToken;
 
     public @Email(message = "Email should be valid") @NotBlank(message = "Email is required") String getEmail() {
@@ -57,6 +56,22 @@ public class UserDto {
         this.username = username;
     }
 
+    public @NotBlank(message = "Username is required") String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(@NotBlank(message = "First name is required") String firstName) {
+        this.firstName = firstName;
+    }
+
+    public @NotBlank(message = "Last name is required") String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(@NotBlank(message = "Username is required") String lastName) {
+        this.lastName = lastName;
+    }
+
     public @NotBlank(message = "Password is required") @Size(min = 8, message = "Password should be at least 8 characters long") String getPassword() {
         return password;
     }
@@ -71,14 +86,6 @@ public class UserDto {
 
     public void setPasswordConfirm(@NotBlank(message = "Password confirmation is required") String passwordConfirm) {
         this.passwordConfirm = passwordConfirm;
-    }
-
-    public @NotBlank(message = "Name is required") String getName() {
-        return name;
-    }
-
-    public void setName(@NotBlank(message = "Name is required") String name) {
-        this.name = name;
     }
 
     public boolean isActive() {
