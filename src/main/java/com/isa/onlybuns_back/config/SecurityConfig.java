@@ -1,14 +1,14 @@
 package com.isa.onlybuns_back.config;
 
+import com.isa.onlybuns_back.security.IpAddressLoginAttemptFilter;
 import com.isa.onlybuns_back.security.JWTAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
+import com.isa.onlybuns_back.security.LoginAttemptService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -22,7 +22,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -30,11 +29,13 @@ public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final JWTAuthenticationFilter jwtFilter;
+    private final LoginAttemptService loginAttemptService;
 
     @Autowired
-    public SecurityConfig(UserDetailsService userDetailsService, JWTAuthenticationFilter jwtFilter) {
+    public SecurityConfig(UserDetailsService userDetailsService, JWTAuthenticationFilter jwtFilter, LoginAttemptService loginAttemptService) {
         this.userDetailsService = userDetailsService;
         this.jwtFilter = jwtFilter;
+        this.loginAttemptService = loginAttemptService;
     }
 
     @Bean
@@ -85,6 +86,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authenticationProvider(authenticationProvider())
+                .addFilterBefore(new IpAddressLoginAttemptFilter(loginAttemptService), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
