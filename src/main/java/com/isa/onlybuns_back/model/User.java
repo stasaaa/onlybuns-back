@@ -3,6 +3,7 @@ package com.isa.onlybuns_back.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -93,7 +94,7 @@ public class User implements UserDetails {
     private String activationToken;
 
     @Embedded
-    private Address address;
+    private Address address = new Address();
 
     public User() {
     }

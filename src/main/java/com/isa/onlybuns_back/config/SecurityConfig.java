@@ -77,7 +77,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "authentication/login",
                                 "authentication/activate",
-                                "authentication/register"
+                                "authentication/register",
+                                "authentication/test"
                         ).permitAll()
                         .anyRequest()
                         .authenticated()
