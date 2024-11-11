@@ -101,6 +101,7 @@ public class PostService {
             postDto.setId(post.getId());
             postDto.setAddress(post.getLocation());
             postDto.setUserId(post.getUser().getId());
+            postDto.setCreationTime(post.getCreationTime());
             try{
                 postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
             } catch (IOException e) {

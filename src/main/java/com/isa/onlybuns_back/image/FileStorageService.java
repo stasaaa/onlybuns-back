@@ -32,15 +32,48 @@ public class FileStorageService {
 
         // Convert MultipartFile to BufferedImage
         BufferedImage image = ImageIO.read(file.getInputStream());
+        if (image == null) {
+            throw new IOException("Failed to read the image.");
+        }
 
-        // Generate a unique file path with .jpg extension
-        String fileName = UUID.randomUUID().toString() + ".jpg";
-        String filePath = FOLDER_PATH + "\\" + fileName ;
+        // Determine file extension based on the image format
+        String fileExtension = getFileExtension(file);
+        if (fileExtension == null) {
+            throw new IOException("Unsupported image format.");
+        }
 
-        // Write the BufferedImage to the file as a JPG
-        ImageIO.write(image, "jpg", new File(filePath));
+        // Generate a unique file name
+        String fileName = UUID.randomUUID().toString() + "." + fileExtension;
+        String filePath = FOLDER_PATH + "\\" + fileName;
 
-        return fileName; // Return the file path of the saved image
+        // Write the BufferedImage to the file in the corresponding format
+        if (ImageIO.write(image, fileExtension, new File(filePath))) {
+            return fileName;  // Return the file name (or path if needed)
+        } else {
+            throw new IOException("Failed to save the image.");
+        }
+    }
+
+    private String getFileExtension(MultipartFile file) throws IOException {
+        // Extract image format based on the file content
+        String contentType = file.getContentType();
+
+        if (contentType == null) {
+            return null; // Return null if content type is not found
+        }
+
+        // Check the content type and return the appropriate file extension
+        if (contentType.equals("image/jpeg")) {
+            return "jpg";
+        } else if (contentType.equals("image/png")) {
+            return "png";
+        } else if (contentType.equals("image/gif")) {
+            return "gif";
+        } else if (contentType.equals("image/bmp")) {
+            return "bmp";
+        } else {
+            return null; // If it's an unsupported format
+        }
     }
 
     public byte[] getImage(String fileName) throws IOException {
