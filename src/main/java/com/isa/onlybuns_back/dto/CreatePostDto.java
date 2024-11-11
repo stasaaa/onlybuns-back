@@ -11,10 +11,10 @@ import org.springframework.web.multipart.MultipartFile;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostDto {
+public class CreatePostDto {
     private long id;
     private String description;
-    private byte[] image; // Use MultipartFile for file uploads
+    private MultipartFile image;
     private long userId;
     private Address address;
 }

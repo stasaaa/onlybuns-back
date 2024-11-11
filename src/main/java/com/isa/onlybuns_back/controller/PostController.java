@@ -2,20 +2,20 @@ package com.isa.onlybuns_back.controller;
 
 import com.isa.onlybuns_back.dto.PostDto;
 import com.isa.onlybuns_back.image.FileStorageService;
-import com.isa.onlybuns_back.model.Post;
-import com.isa.onlybuns_back.repository.PostRepository;
+import com.isa.onlybuns_back.model.Address;
 import com.isa.onlybuns_back.service.PostService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Collection;
 
 @RestController
-@RequestMapping("/posts")
+@RequestMapping("posts")
 public class PostController {
 
     private final FileStorageService fileStorageService;
@@ -27,33 +27,40 @@ public class PostController {
         this.postService = postService;
     }
 
-    // Endpoint for uploading a post with images
-    @PostMapping("/create")
-    public ResponseEntity<PostDto> createPost(@RequestParam("description") PostDto postDto,
-                                           @RequestParam("files") List<MultipartFile> files) {
-        try {
-            List<String> imageUrls = files.stream()
-                    .map(fileStorageService::storeFile)
-                    .collect(Collectors.toList());
+    @PostMapping("create")
+    public ResponseEntity<PostDto> createPost(
+            @RequestParam("userId") long userId,
+            @RequestParam("description") String description,
+            @RequestParam("address") String addressJson,
+            @RequestParam("image") MultipartFile imageFile
+    ) throws IOException {
+        String imagePath = fileStorageService.storeFile(imageFile);
+        byte[] imageBytes = imageFile.getBytes();
+        PostDto postDto = new PostDto();
+        postDto.setDescription(description);
+        postDto.setImage(imageBytes);
+        postDto.setUserId(userId);
 
-            // Create and save post
-            postService.save(postDto, imageUrls);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Address address = objectMapper.readValue(addressJson, Address.class);
+        postDto.setAddress(address);
 
-            return ResponseEntity.ok(postDto); // Return the created post with image URLs
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
-        }
+        postService.save(postDto, imagePath);
+        return new ResponseEntity<>(postDto, HttpStatus.CREATED);
     }
 
-    // Endpoint to retrieve a post along with its images
-    @GetMapping("/{id}")
-    public ResponseEntity<Post> getPost(@PathVariable long id) {
-        Post post = postService.findById(id);
-
-        if (post != null) {
-            return ResponseEntity.ok(post); // Return the post with image URLs
-        } else {
+    @GetMapping("{id}")
+    public ResponseEntity<PostDto> getPost(@PathVariable long id) throws IOException {
+        PostDto ret = postService.findById(id);
+        if(ret == null) {
             return ResponseEntity.status(404).body(null);
         }
+        return ResponseEntity.ok(ret);
+    }
+
+    @GetMapping("all")
+    public ResponseEntity<Collection<PostDto>> getAllPosts() {
+        Collection<PostDto> ret = postService.findAll();
+        return ResponseEntity.ok(ret);
     }
 }

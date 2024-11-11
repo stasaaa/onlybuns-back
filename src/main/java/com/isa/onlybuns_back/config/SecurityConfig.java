@@ -78,7 +78,7 @@ public class SecurityConfig {
                                 "authentication/login",
                                 "authentication/activate",
                                 "authentication/register",
-                                "authentication/test"
+                                "posts/all"
                         ).permitAll()
                         .anyRequest()
                         .authenticated()

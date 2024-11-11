@@ -33,8 +33,17 @@ public class Post {
     )
     private String description;
 
-    @ElementCollection
-    private List<String> imagePaths;
+    @Column(
+            name = "image_path",
+            nullable = false
+    )
+    private String imagePaths;
+
+    @Column(
+            name = "location",
+            nullable = false
+    )
+    private Address location;
 
     @ManyToOne
     private User user;
