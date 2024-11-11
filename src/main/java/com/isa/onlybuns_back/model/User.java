@@ -96,8 +96,12 @@ public class User implements UserDetails {
     @Embedded
     private Address address = new Address();
 
-    @OneToMany // user have multipe posts
-    private List<Post> posts;
+    // Relationships
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     public User() {
     }

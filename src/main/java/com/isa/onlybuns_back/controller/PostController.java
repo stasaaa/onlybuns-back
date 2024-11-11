@@ -3,16 +3,19 @@ package com.isa.onlybuns_back.controller;
 import com.isa.onlybuns_back.dto.PostDto;
 import com.isa.onlybuns_back.image.FileStorageService;
 import com.isa.onlybuns_back.model.Address;
+import com.isa.onlybuns_back.model.Post;
 import com.isa.onlybuns_back.service.PostService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import com.isa.onlybuns_back.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("posts")
@@ -20,11 +23,12 @@ public class PostController {
 
     private final FileStorageService fileStorageService;
     private final PostService postService;
+    private final UserService userService;
 
-    @Autowired
-    public PostController(FileStorageService fileStorageService, PostService postService) {
-        this.fileStorageService = fileStorageService;
+    public PostController(PostService postService, UserService userService, FileStorageService fileStorageService, UserService userService1) {
         this.postService = postService;
+        this.fileStorageService = fileStorageService;
+        this.userService = userService1;
     }
 
     @PostMapping("create")
@@ -45,7 +49,7 @@ public class PostController {
         Address address = objectMapper.readValue(addressJson, Address.class);
         postDto.setAddress(address);
 
-        postService.save(postDto, imagePath);
+        postService.create(postDto, imagePath);
         return new ResponseEntity<>(postDto, HttpStatus.CREATED);
     }
 
@@ -59,8 +63,26 @@ public class PostController {
     }
 
     @GetMapping("all")
-    public ResponseEntity<Collection<PostDto>> getAllPosts() {
+    public ResponseEntity<Collection<PostDto>> getAllPosts() throws IOException {
         Collection<PostDto> ret = postService.findAll();
         return ResponseEntity.ok(ret);
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        postService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity<Post> update(@PathVariable Long id, @RequestBody Post post) {
+        return postService.update(id, post)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("user/{userId}")
+    public ResponseEntity<List<Post>> getByUserId(@PathVariable long userId) {
+        return ResponseEntity.ok(postService.getByUserId(userId));
     }
 }

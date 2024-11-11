@@ -3,13 +3,11 @@ package com.isa.onlybuns_back.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Date;
 import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
+@Table(name = "posts")
 public class Post {
     @Id
     @SequenceGenerator(
@@ -45,6 +43,92 @@ public class Post {
     )
     private Address location;
 
+    @Column
+    private Date creationTime;
+
+    @Column
+    private int likes;
+
     @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
+
+    // Constructors
+    public Post(Long id, String description, String image, Address location, Date creationTime, int likes, User user, List<Comment> comments) {
+        this.id = id;
+        this.description = description;
+        this.imagePaths = image;
+        this.location = location;
+        this.creationTime = creationTime;
+        this.likes = likes;
+        this.user = user;
+        this.comments = comments;
+    }
+
+    public Post() {
+    }
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getImagePaths() {
+        return imagePaths;
+    }
+
+    public void setImagePaths(String image) {
+        this.imagePaths = image;
+    }
+
+    public Address getLocation() {
+        return location;
+    }
+
+    public void setLocation(Address location) {
+        this.location = location;
+    }
+
+    public Date getCreationTime() { return creationTime; }
+
+    public void setCreationTime(Date creationTime) { this.creationTime = creationTime; }
+
+    public int getLikes() {
+        return likes;
+    }
+
+    public void setLikes(int likes) {
+        this.likes = likes;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
+    }
 }

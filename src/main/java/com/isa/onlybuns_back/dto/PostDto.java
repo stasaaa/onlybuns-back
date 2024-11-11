@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Date;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,4 +19,6 @@ public class PostDto {
     private byte[] image; // Use MultipartFile for file uploads
     private long userId;
     private Address address;
+    private Date creationTime;
+    private int likes;
 }

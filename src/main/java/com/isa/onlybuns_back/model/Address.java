@@ -13,13 +13,14 @@ public class Address {
     private String city;
     private String street;
     private String number;
-    private double latitude;
-    private double longitude;
+    private Double latitude;
+    private Double longitude;
 
     public Address() {
     }
 
-    public Address(String country, String postalCode, String city, String street, String number, double latitude, double longitude) {
+    public Address(String country, String postalCode, String city, String street, String number, Double latitude, Double longitude) {
+
         this.country = country;
         this.postalCode = postalCode;
         this.city = city;
