@@ -3,7 +3,6 @@ package com.isa.onlybuns_back.repository;
 import com.isa.onlybuns_back.model.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 
 @Repository

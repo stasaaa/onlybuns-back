@@ -61,6 +61,9 @@ public class AuthenticationService {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 authenticationRequest.getEmail(), authenticationRequest.getPassword()));
         var user = userRepository.findByEmail(authenticationRequest.getEmail());
+        if(!user.isActive()){
+            throw new IllegalArgumentException("Account is not active");
+        }
         var jwtToken = jwtService.generateToken(user);
         return  AuthenticationResponse
                 .builder()
@@ -86,7 +89,11 @@ public class AuthenticationService {
         user.setEmail(userDto.getEmail());
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
-        user.setAddress(addressMapper.addressDtoToAddress(userDto.getAddress()));
+        user.getAddress().setCountry(userDto.getAddress().getCountry());
+        user.getAddress().setCity(userDto.getAddress().getCity());
+        user.getAddress().setPostalCode(userDto.getAddress().getPostalCode());
+        user.getAddress().setStreet(userDto.getAddress().getStreet());
+        user.getAddress().setNumber(userDto.getAddress().getNumber());
         user.setActive(false);
         user.setUserRole(UserRole.REGISTERED);
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
@@ -96,13 +103,13 @@ public class AuthenticationService {
 
         userRepository.save(user);
 
-//        sendActivationEmail(user.getEmail(), token);
+        sendActivationEmail(user.getEmail(), token);
 
         return true;
     }
 
     private void sendActivationEmail(String email, String token) {
-        String activationLink = "http://localhost:8080/activate?token=" + token;
+        String activationLink = "http://localhost:3000/activate?token=" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);

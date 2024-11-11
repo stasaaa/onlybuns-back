@@ -1,7 +1,6 @@
 package com.isa.onlybuns_back.model;
 
 import jakarta.persistence.*;
-
 import java.util.Date;
 import java.util.List;
 

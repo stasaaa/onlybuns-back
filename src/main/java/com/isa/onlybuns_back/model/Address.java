@@ -20,6 +20,7 @@ public class Address {
     }
 
     public Address(String country, String postalCode, String city, String street, String number, Double latitude, Double longitude) {
+
         this.country = country;
         this.postalCode = postalCode;
         this.city = city;

@@ -1,5 +1,4 @@
 package com.isa.onlybuns_back.service;
-
 import com.isa.onlybuns_back.iservice.IPostService;
 import com.isa.onlybuns_back.model.Post;
 import com.isa.onlybuns_back.repository.PostRepository;

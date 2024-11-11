@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.HandlerMapping;
 
 import java.util.Collection;
 
@@ -20,11 +21,13 @@ public class AuthenticationController {
 
     private final AuthenticationService authentificationService;
     private final LoginAttemptService loginAttemptService;
+    private final HandlerMapping resourceHandlerMapping;
 
     @Autowired
-    public AuthenticationController(AuthenticationService authentificationService, LoginAttemptService loginAttemptService) {
+    public AuthenticationController(AuthenticationService authentificationService, LoginAttemptService loginAttemptService, HandlerMapping resourceHandlerMapping) {
         this.authentificationService = authentificationService;
         this.loginAttemptService = loginAttemptService;
+        this.resourceHandlerMapping = resourceHandlerMapping;
     }
 
     @PostMapping("login")
@@ -65,6 +68,11 @@ public class AuthenticationController {
     public ResponseEntity<UserDto> getUserDetails(@RequestParam String email) {
         var ret = this.authentificationService.userDetails(email);
         return ResponseEntity.ok(ret);
+    }
+
+    @GetMapping("test")
+    public ResponseEntity<String> test(){
+        return ResponseEntity.ok("Test je prosao");
     }
 
     private String getClientIp(HttpServletRequest request) {

@@ -1,5 +1,4 @@
 package com.isa.onlybuns_back.controller;
-
 import com.isa.onlybuns_back.model.Post;
 import com.isa.onlybuns_back.dto.PostCreateDto;
 import com.isa.onlybuns_back.model.User;
