@@ -6,6 +6,7 @@ import com.isa.onlybuns_back.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -39,8 +40,11 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<UserDto> findAll() {
+        return userRepository.findAll()
+                .stream()
+                .map(UserDto::new) // Mapira User entitet u UserDto
+                .collect(Collectors.toList());
     }
 
     public String findUsername(long id) {
