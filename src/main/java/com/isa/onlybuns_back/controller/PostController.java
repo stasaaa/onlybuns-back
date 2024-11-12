@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("posts")
@@ -83,5 +84,12 @@ public class PostController {
     @GetMapping("user/{userId}")
     public ResponseEntity<List<Post>> getByUserId(@PathVariable long userId) {
         return ResponseEntity.ok(postService.getByUserId(userId));
+    }
+
+    @PostMapping("/{postId}/toggle-like")
+    public ResponseEntity<Void> toggleLike(@PathVariable Long postId, @RequestBody Map<String, Boolean> request) {
+        boolean liked = request.getOrDefault("liked", false);
+        postService.toggleLike(postId, liked);
+        return ResponseEntity.ok().build();
     }
 }

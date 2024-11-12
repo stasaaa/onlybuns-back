@@ -97,6 +97,7 @@ public class PostService {
             postDto.setAddress(post.getLocation());
             postDto.setUserId(post.getUser().getId());
             postDto.setCreationTime(post.getCreationTime());
+            postDto.setLikes(post.getLikes());
             try{
                 postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
             } catch (IOException e) {
@@ -106,5 +107,17 @@ public class PostService {
             postDtos.add(postDto);
         }
         return postDtos;
+    }
+    public void toggleLike(Long postId, boolean liked) {
+        Post post = postRepository.findById(postId).orElse(null);
+
+        // Increase or decrease likes based on the `liked` parameter
+        if (liked) {
+            post.setLikes(post.getLikes() + 1); // Increment likes
+        } else {
+            post.setLikes(post.getLikes() - 1); // Decrement likes
+        }
+
+        postRepository.save(post);
     }
 }
