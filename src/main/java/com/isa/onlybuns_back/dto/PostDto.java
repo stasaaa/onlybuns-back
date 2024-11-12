@@ -1,6 +1,7 @@
 package com.isa.onlybuns_back.dto;
 
 import com.isa.onlybuns_back.model.Address;
+import com.isa.onlybuns_back.model.Post;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -22,4 +23,5 @@ public class PostDto {
     private Date creationTime;
     private int likes;
     private String username;
+
 }
