@@ -41,6 +41,10 @@ public class UserDto {
 
     private String activationToken;
 
+    private int numberOfPosts;
+
+    private int numberOfFollowing = 0;
+
     public @Email(message = "Email should be valid") @NotBlank(message = "Email is required") String getEmail() {
         return email;
     }
@@ -103,6 +107,7 @@ public class UserDto {
         this.username = user.getUsername();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
+        this.numberOfPosts = user.getPosts().size();
     }
 
     public UserDto() {}
