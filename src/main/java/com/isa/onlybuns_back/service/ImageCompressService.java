@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -27,28 +29,42 @@ public class ImageCompressService {
     private static final Logger logger = LoggerFactory.getLogger(ImageCompressService.class);
 
     //scheduled to run every day at midnight
-    //@Scheduled(cron = "0 0 0 * * ?")
-    @Scheduled(cron = "0 */3 * * * ?")
+    @Scheduled(cron = "0 0 0 * * ?")
+    //@Scheduled(cron = "0 */2 * * * ?")
     public void compressDailyImages() throws IOException {
         logger.info("Image compressing started...");
-        //LocalDate oneMonthAgo = LocalDate.now().minus(1, ChronoUnit.MONTHS);
+        LocalDate oneMonthAgo = LocalDate.now().minus(1, ChronoUnit.MONTHS);
+        //LocalDateTime oneMinuteAgo = LocalDateTime.now().minus(1, ChronoUnit.MINUTES);
+        logger.info("Retrieving images older than one minute...");
 
-        //retrieve images older than one month that are not compressed
-        //List<Post> posts = postRepository.findImagesToCompress(oneMonthAgo);
-
-        LocalDateTime oneMinuteAgo = LocalDateTime.now().minus(1, ChronoUnit.MINUTES);
+        // Define the relative base path for image storage
+        Path basePath = Paths.get("uploads", "images");
 
         // Retrieve images older than one minute that are not compressed
-        List<Post> posts = postRepository.findImagesToCompress(oneMinuteAgo);
+        List<Post> posts = postRepository.findImagesToCompress(oneMonthAgo);
+        logger.info("Number of images to compress: " + posts.size());
 
-        for(Post post : posts) {
-            Path imagePath = Path.of(post.getImagePaths());
-            compressImage(imagePath);
-            post.setCompressed(true);
-            postRepository.save(post);
-            logger.info("Compressed image: " + post.getImagePaths());
+        for (Post post : posts) {
+            String imagePathString = post.getImagePaths();
+            logger.info("Processing image for post ID: " + post.getId() + ", Image Path: " + imagePathString);
+
+            // Combine base path with image path to get the full path
+            Path imagePath = basePath.resolve(imagePathString);
+
+            try {
+                compressImage(imagePath);
+                post.setCompressed(true);
+                postRepository.save(post);
+                logger.info("Compressed and saved image for post ID: " + post.getId() + ", Path: " + imagePath);
+            } catch (IOException e) {
+                logger.error("Failed to compress image for post ID: " + post.getId() + ", Path: " + imagePath, e);
+            }
         }
+        logger.info("Image compressing process completed.");
     }
+
+
+
 
     private void compressImage(Path imagePath) throws IOException {
         File originalImageFile = imagePath.toFile();
