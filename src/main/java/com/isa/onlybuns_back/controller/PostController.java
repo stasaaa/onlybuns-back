@@ -75,10 +75,9 @@ public class PostController {
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Post> update(@PathVariable Long id, @RequestBody Post post) {
-        return postService.update(id, post)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<PostDto> update(@PathVariable Long id, @RequestBody PostDto postDto) {
+        postService.update(id, postDto);
+        return ResponseEntity.ok(postDto);
     }
 
     @GetMapping("user/{userId}")

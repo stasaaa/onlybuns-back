@@ -1,5 +1,6 @@
 package com.isa.onlybuns_back.dto;
 
+import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.model.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -39,6 +40,10 @@ public class UserDto {
     private boolean isActive;
 
     private String activationToken;
+
+    private int numberOfPosts;
+
+    private int numberOfFollowing = 0;
 
     public @Email(message = "Email should be valid") @NotBlank(message = "Email is required") String getEmail() {
         return email;
@@ -95,5 +100,16 @@ public class UserDto {
     public void setActive(boolean active) {
         isActive = active;
     }
+
+    public UserDto(User user) {
+        this.id = user.getId();
+        this.email = user.getEmail();
+        this.username = user.getUsername();
+        this.firstName = user.getFirstName();
+        this.lastName = user.getLastName();
+        this.numberOfPosts = user.getPosts().size();
+    }
+
+    public UserDto() {}
 
 }

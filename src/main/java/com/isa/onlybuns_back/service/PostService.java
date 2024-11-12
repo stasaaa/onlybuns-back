@@ -76,16 +76,11 @@ public class PostService {
         return postDto;  // Correct return
     }
 
-    public Optional<Post> update(Long id, Post postDetails) {
-        return postRepository.findById(id).map(post -> {
-            post.setDescription(postDetails.getDescription());
-            post.setImagePaths(postDetails.getImagePaths());
-            post.setLocation(postDetails.getLocation());
-            post.setLikes(postDetails.getLikes());
-            post.setUser(postDetails.getUser());
-            post.setComments(postDetails.getComments());
-            return postRepository.save(post);
-        });
+    public Optional<PostDto> update(long id, PostDto postDto) {
+        Post post = postRepository.findById(id).orElse(null);
+        post.setDescription(postDto.getDescription());
+        postRepository.save(post);
+        return postDto.equals(post) ? Optional.of(postDto) : Optional.empty();
     }
 
     public List<Post> getByUserId(Long userId) {
