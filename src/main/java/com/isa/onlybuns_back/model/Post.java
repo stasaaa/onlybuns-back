@@ -55,6 +55,7 @@ public class Post {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
 
+    @Column(name = "compressed", nullable = false)
     private boolean compressed = false;
 
     // Constructors

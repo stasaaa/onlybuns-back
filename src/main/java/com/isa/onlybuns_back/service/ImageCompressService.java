@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -27,13 +27,19 @@ public class ImageCompressService {
     private static final Logger logger = LoggerFactory.getLogger(ImageCompressService.class);
 
     //scheduled to run every day at midnight
-    @Scheduled(cron = "0 0 0 * * ?")
+    //@Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 */3 * * * ?")
     public void compressDailyImages() throws IOException {
         logger.info("Image compressing started...");
-        LocalDate oneMonthAgo = LocalDate.now().minus(1, ChronoUnit.MONTHS);
+        //LocalDate oneMonthAgo = LocalDate.now().minus(1, ChronoUnit.MONTHS);
 
         //retrieve images older than one month that are not compressed
-        List<Post> posts = postRepository.findImagesToCompress(oneMonthAgo);
+        //List<Post> posts = postRepository.findImagesToCompress(oneMonthAgo);
+
+        LocalDateTime oneMinuteAgo = LocalDateTime.now().minus(1, ChronoUnit.MINUTES);
+
+        // Retrieve images older than one minute that are not compressed
+        List<Post> posts = postRepository.findImagesToCompress(oneMinuteAgo);
 
         for(Post post : posts) {
             Path imagePath = Path.of(post.getImagePaths());
