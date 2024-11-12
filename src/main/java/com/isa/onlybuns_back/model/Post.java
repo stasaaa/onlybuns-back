@@ -1,7 +1,6 @@
 package com.isa.onlybuns_back.model;
 
 import jakarta.persistence.*;
-import lombok.*;
 
 import java.util.Date;
 import java.util.List;
@@ -55,6 +54,8 @@ public class Post {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
+
+    private boolean compressed = false;
 
     // Constructors
     public Post(Long id, String description, String image, Address location, Date creationTime, int likes, User user, List<Comment> comments) {
@@ -131,4 +132,8 @@ public class Post {
     public void setComments(List<Comment> comments) {
         this.comments = comments;
     }
+
+    public boolean getCompressed() { return compressed; }
+
+    public void setCompressed(boolean compressed) { this.compressed = compressed; }
 }
