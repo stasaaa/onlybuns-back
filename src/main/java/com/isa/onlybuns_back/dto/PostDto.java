@@ -21,4 +21,5 @@ public class PostDto {
     private Address address;
     private Date creationTime;
     private int likes;
+    private String username;
 }
