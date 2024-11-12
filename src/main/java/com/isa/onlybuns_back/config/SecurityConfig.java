@@ -79,7 +79,8 @@ public class SecurityConfig {
                                 "authentication/activate",
                                 "authentication/register",
                                 "posts/all",
-                                "users/findUsername/{id}"
+                                "users/findUsername/{id}",
+                                "users/find/{username}"
                         ).permitAll()
                         .anyRequest()
                         .authenticated()

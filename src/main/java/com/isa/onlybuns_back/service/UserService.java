@@ -48,4 +48,9 @@ public class UserService {
         assert user != null;
         return user.getUsername();
     }
+
+    public UserDto findByUsername(String username) {
+        User user = userRepository.findByUsername(username);
+        return findById(user.getId());
+    }
 }

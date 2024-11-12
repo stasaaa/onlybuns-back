@@ -32,7 +32,7 @@ public class UserDto {
     @NotBlank(message = "Password confirmation is required")
     private String passwordConfirm;
 
-    private AddressDto address;
+    private AddressDto address = new AddressDto();
 
     private UserRole userRole;
 

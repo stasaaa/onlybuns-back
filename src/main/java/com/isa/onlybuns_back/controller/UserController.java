@@ -28,4 +28,9 @@ public class UserController {
     public String findUsername(@PathVariable long id) {
         return userService.findUsername(id);
     }
+
+    @GetMapping("find/{username}")
+    public UserDto findByUsername(@PathVariable String username) {
+        return userService.findByUsername(username);
+    }
 }
