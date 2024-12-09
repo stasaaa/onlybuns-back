@@ -37,7 +37,5 @@ public class UserController {
     public UserDto findByUsername(@PathVariable String username) {
         return userService.findByUsername(username);
     }
-
-
 }
 

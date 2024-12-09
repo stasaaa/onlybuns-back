@@ -2,23 +2,17 @@ package com.isa.onlybuns_back.service;
 
 import com.isa.onlybuns_back.dto.PostDto;
 import com.isa.onlybuns_back.image.FileStorageService;
-import com.isa.onlybuns_back.iservice.IPostService;
 import com.isa.onlybuns_back.model.Post;
 import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.repository.PostRepository;
 import com.isa.onlybuns_back.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Pageable;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.UUID;
 
 @Service
 public class PostService {
@@ -119,5 +113,70 @@ public class PostService {
         }
 
         postRepository.save(post);
+    }
+
+    public Map<String, Long> getPostQuantity() {
+        long all = postRepository.count();
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MONTH, -1);
+        Date lastMonthDate = calendar.getTime();
+        long lastMonth = postRepository.countPostsFromLastMonth(lastMonthDate);
+
+        Map<String, Long> result = new HashMap<>();
+        result.put("totalPosts", all);
+        result.put("lastMonthPosts", lastMonth);
+        return result;
+    }
+
+    public Collection<PostDto> getFiveMostLikedLastWeek() throws IOException {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, -7);  // Datum od pre 7 dana
+        Date sevenDaysAgo = calendar.getTime();
+
+        Pageable topFive = (Pageable) PageRequest.of(0, 5);
+
+        List<Post> posts = postRepository.getFiveMostLikedLastWeek(sevenDaysAgo, topFive);
+        Collection<PostDto> postDtos = new ArrayList<>();
+        for (Post post : posts) {
+            PostDto postDto = new PostDto();
+            postDto.setDescription(post.getDescription());
+            postDto.setId(post.getId());
+            postDto.setAddress(post.getLocation());
+            postDto.setUserId(post.getUser().getId());
+            postDto.setCreationTime(post.getCreationTime());
+            postDto.setLikes(post.getLikes());
+            try{
+                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
+            } catch (IOException e) {
+                throw new IOException(e);
+            }
+
+            postDtos.add(postDto);
+        }
+        return postDtos;
+    }
+
+    public Collection<PostDto> getTopTenMostLikedPosts() throws IOException {
+        Pageable topTen = (Pageable) PageRequest.of(0, 10);  // Podesi broj na 10
+        List<Post> posts = postRepository.getTopTenMostLikedPosts(topTen);
+        Collection<PostDto> postDtos = new ArrayList<>();
+        for (Post post : posts) {
+            PostDto postDto = new PostDto();
+            postDto.setDescription(post.getDescription());
+            postDto.setId(post.getId());
+            postDto.setAddress(post.getLocation());
+            postDto.setUserId(post.getUser().getId());
+            postDto.setCreationTime(post.getCreationTime());
+            postDto.setLikes(post.getLikes());
+            try{
+                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
+            } catch (IOException e) {
+                throw new IOException(e);
+            }
+
+            postDtos.add(postDto);
+        }
+        return postDtos;
     }
 }
