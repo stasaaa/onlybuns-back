@@ -36,6 +36,7 @@ public class NotificationService {
 
     private void sendSummaryEmail(User user) {
         Date sevenDaysAgo = new Date(System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000L);
+        //if the user has been inactive for seven days, there is no need for removing their posts from the list cause their existence would be impossible
         List<Post> recentPosts = postRepository.findByCreationTimeAfter(sevenDaysAgo);
         int newPosts = recentPosts.size();
         SimpleMailMessage message = new SimpleMailMessage();
