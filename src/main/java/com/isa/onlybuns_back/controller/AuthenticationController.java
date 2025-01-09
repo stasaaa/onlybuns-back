@@ -64,6 +64,11 @@ public class AuthenticationController {
         return ResponseEntity.ok(ret);
     }
 
+    @PutMapping("update-password")
+    public ResponseEntity<UserDto> updatePassword(@RequestBody UserDto userDto) {
+        return ResponseEntity.ok(authentificationService.updatePassword(userDto));
+    }
+
     @GetMapping("userDetails")
     public ResponseEntity<UserDto> getUserDetails(@RequestParam String email) {
         var ret = this.authentificationService.userDetails(email);
