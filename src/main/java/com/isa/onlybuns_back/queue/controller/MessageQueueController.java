@@ -18,14 +18,14 @@ public class MessageQueueController {
     }
 
     // Endpoint to send RabbitCareLocation (direct)
-    @PostMapping("/send/rabbit-care/{queueName}")
+    @PostMapping("/send/direct/{queueName}")
     public String sendRabbitCareLocation(@PathVariable String queueName, @RequestBody RabbitCareLocation location) {
         messageBroker.sendMessageToDirectQueue(queueName, location);
         return "Rabbit care location sent to " + queueName;
     }
 
     // Endpoint to receive RabbitCareLocation (direct)
-    @GetMapping("/receive/rabbit-care/{queueName}")
+    @GetMapping("/receive/direct/{queueName}")
     public Message<RabbitCareLocation> receiveRabbitCareLocation(@PathVariable String queueName) throws InterruptedException {
         return messageBroker.receiveMessageFromDirectQueue(queueName);
     }

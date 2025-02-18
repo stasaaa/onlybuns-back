@@ -8,9 +8,9 @@ import lombok.*;
 @ToString
 public class RabbitCareLocation {
     private String name;
-    private String address;
+    private Address address;
 
-    public RabbitCareLocation(String name, String address) {
+    public RabbitCareLocation(String name, Address address) {
         this.name = name;
         this.address = address;
     }
