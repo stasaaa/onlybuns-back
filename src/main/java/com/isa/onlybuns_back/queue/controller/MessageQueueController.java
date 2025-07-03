@@ -1,14 +1,13 @@
 package com.isa.onlybuns_back.queue.controller;
 
 import com.isa.onlybuns_back.queue.model.Message;
-import com.isa.onlybuns_back.queue.model.RabbitCareLocation;
 import com.isa.onlybuns_back.queue.service.MessageBroker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/queue")
-public class MessageQueueController {
+public class MessageQueueController<T> {
 
     private final MessageBroker messageBroker;
 
@@ -19,14 +18,14 @@ public class MessageQueueController {
 
     // Endpoint to send RabbitCareLocation (direct)
     @PostMapping("/send/direct/{queueName}")
-    public String sendRabbitCareLocation(@PathVariable String queueName, @RequestBody RabbitCareLocation location) {
+    public String sendRabbitCareLocation(@PathVariable String queueName, @RequestBody T location) {
         messageBroker.sendMessageToDirectQueue(queueName, location);
         return "Rabbit care location sent to " + queueName;
     }
 
     // Endpoint to receive RabbitCareLocation (direct)
     @GetMapping("/receive/direct/{queueName}")
-    public Message<RabbitCareLocation> receiveRabbitCareLocation(@PathVariable String queueName) throws InterruptedException {
+    public Message<T> receiveRabbitCareLocation(@PathVariable String queueName) throws InterruptedException {
         return messageBroker.receiveMessageFromDirectQueue(queueName);
     }
 
