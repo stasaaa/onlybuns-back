@@ -19,4 +19,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Modifying
     @Query("DELETE FROM User u WHERE u.isActive = false")
     void deleteAllInactiveUsers();
+
+    @Query("SELECT COUNT(u) FROM User u WHERE SIZE(u.posts) > 0")
+    long countUsersWithPosts();
+
+    @Query("SELECT COUNT(u) FROM User u WHERE SIZE(u.posts) = 0 AND SIZE(u.comments) > 0")
+    long countUsersWithOnlyComments();
+
 }

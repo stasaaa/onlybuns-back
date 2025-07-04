@@ -80,7 +80,8 @@ public class SecurityConfig {
                                 "authentication/register",
                                 "posts/all",
                                 "users/findUsername/{id}",
-                                "users/find/{username}"
+                                "users/find/{username}",
+                                "analytics/**"
                         ).permitAll()
                         .anyRequest()
                         .authenticated()
