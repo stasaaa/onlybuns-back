@@ -26,4 +26,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT COUNT(u) FROM User u WHERE SIZE(u.posts) = 0 AND SIZE(u.comments) > 0")
     long countUsersWithOnlyComments();
 
+
+
 }

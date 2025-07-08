@@ -120,7 +120,7 @@ public class User implements UserDetails {
         this.address = address;
     }
 
-    public User(long id, String email, String username, String password, String firstName,
+    public User(Long id, String email, String username, String password, String firstName,
                 String lastName, UserRole userRole, Date lastLogin, boolean isActive,
                 String activationToken, Address address) {
         this.id = id;

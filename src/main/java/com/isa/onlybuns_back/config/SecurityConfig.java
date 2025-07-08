@@ -81,7 +81,10 @@ public class SecurityConfig {
                                 "posts/all",
                                 "users/findUsername/{id}",
                                 "users/find/{username}",
-                                "analytics/**"
+                                "analytics/**",
+                                "/group-chat/**",
+                                "/users",
+                                "/ws/**"
                         ).permitAll()
                         .anyRequest()
                         .authenticated()
