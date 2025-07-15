@@ -52,8 +52,15 @@ public class AuthenticationService {
         userdto.setFirstName(user.getFirstName());
         userdto.setLastName(user.getLastName());
         userdto.setActive(user.isActive());
-        userdto.setAddress(user.getAddress());
+//        userdto.setAddress(addressMapper.addressToAddressDto(user.getAddress()));  -- Nzm zasto ne radi nigne mapper
         userdto.setUserRole(user.getUserRole());
+        userdto.getAddress().setCity(user.getAddress().getCity());
+        userdto.getAddress().setCountry(user.getAddress().getCountry());
+        userdto.getAddress().setPostalCode(user.getAddress().getPostalCode());
+        userdto.getAddress().setStreet(user.getAddress().getStreet());
+        userdto.getAddress().setNumber(user.getAddress().getNumber());
+        userdto.getAddress().setLatitude(user.getAddress().getLatitude());
+        userdto.getAddress().setLongitude(user.getAddress().getLongitude());
         return userdto;
     }
 
@@ -95,8 +102,8 @@ public class AuthenticationService {
         user.getAddress().setPostalCode(userDto.getAddress().getPostalCode());
         user.getAddress().setStreet(userDto.getAddress().getStreet());
         user.getAddress().setNumber(userDto.getAddress().getNumber());
-        user.getAddress().setLongitude(userDto.getAddress().getLongitude());
         user.getAddress().setLatitude(userDto.getAddress().getLatitude());
+        user.getAddress().setLongitude(userDto.getAddress().getLongitude());
         user.setActive(false);
         user.setUserRole(UserRole.REGISTERED);
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
