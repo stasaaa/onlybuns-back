@@ -109,4 +109,20 @@ public class PostController {
     public ResponseEntity<Collection<PostDto>> getTopTenPosts() throws IOException {
         return ResponseEntity.ok(postService.getTopTenMostLikedPosts());
     }
+
+    @GetMapping("pagedForUser/{username}/{page}/{pageSize}")
+    public ResponseEntity<Collection<PostDto>> getPaged(
+            @PathVariable int page, @PathVariable int pageSize, @PathVariable String username)
+            throws IOException {
+        return ResponseEntity.ok(postService.getPaged(page,pageSize, username));
+    }
+
+    @GetMapping("near-me")
+    public ResponseEntity<Collection<PostDto>> getNearMe(
+            @RequestParam String address, @RequestParam int page, @RequestParam int pageSize) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Address userAddress = objectMapper.readValue(address, Address.class);
+
+        return ResponseEntity.ok(postService.getPostsNear(userAddress, page, pageSize));
+    }
 }

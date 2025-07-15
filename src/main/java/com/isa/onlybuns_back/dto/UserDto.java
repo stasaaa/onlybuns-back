@@ -1,5 +1,6 @@
 package com.isa.onlybuns_back.dto;
 
+import com.isa.onlybuns_back.model.Address;
 import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.model.UserRole;
 import jakarta.validation.constraints.Email;
@@ -33,7 +34,7 @@ public class UserDto {
     @NotBlank(message = "Password confirmation is required")
     private String passwordConfirm;
 
-    private AddressDto address = new AddressDto();
+    private Address address = new Address();
 
     private UserRole userRole;
 

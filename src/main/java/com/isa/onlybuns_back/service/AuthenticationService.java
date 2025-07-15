@@ -52,7 +52,7 @@ public class AuthenticationService {
         userdto.setFirstName(user.getFirstName());
         userdto.setLastName(user.getLastName());
         userdto.setActive(user.isActive());
-        userdto.setAddress(addressMapper.addressToAddressDto(user.getAddress()));
+        userdto.setAddress(user.getAddress());
         userdto.setUserRole(user.getUserRole());
         return userdto;
     }
@@ -85,6 +85,7 @@ public class AuthenticationService {
         }
 
         User user = new User();
+//        TODO: promeniti u mapper
         user.setUsername(userDto.getUsername());
         user.setEmail(userDto.getEmail());
         user.setFirstName(userDto.getFirstName());
@@ -94,6 +95,8 @@ public class AuthenticationService {
         user.getAddress().setPostalCode(userDto.getAddress().getPostalCode());
         user.getAddress().setStreet(userDto.getAddress().getStreet());
         user.getAddress().setNumber(userDto.getAddress().getNumber());
+        user.getAddress().setLongitude(userDto.getAddress().getLongitude());
+        user.getAddress().setLatitude(userDto.getAddress().getLatitude());
         user.setActive(false);
         user.setUserRole(UserRole.REGISTERED);
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
@@ -137,5 +140,15 @@ public class AuthenticationService {
     public Collection<UserDto> getAll() {
         List<User> users = userRepository.findAll();
         return userMapper.usersToUserDTOs(users);
+    }
+
+
+    public UserDto updatePassword(UserDto userDto) {
+        User user = userRepository.findById(userDto.getId()).orElse(null);
+        if (user != null) {
+            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+            userRepository.save(user);
+        }
+        return userDto;
     }
 }
