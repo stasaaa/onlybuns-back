@@ -55,7 +55,7 @@ public class AuthenticationController {
     @PostMapping("register")
     public ResponseEntity<Boolean> register(@Valid @RequestBody UserDto userDto) {
         var ret = authentificationService.register(userDto);
-        return ResponseEntity.ok(ret)  ;
+        return ResponseEntity.ok(ret) ;
     }
 
     @GetMapping("activate")

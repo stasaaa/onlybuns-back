@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("posts")
@@ -91,5 +92,21 @@ public class PostController {
         boolean liked = request.getOrDefault("liked", false);
         postService.toggleLike(postId, liked);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("post-quantity")
+    public ResponseEntity<Map<String, Long>> getPostQuantity() {
+        Map<String, Long> postQuantity = postService.getPostQuantity();
+        return ResponseEntity.ok(postQuantity);
+    }
+
+    @GetMapping("five-most-liked-last-week")
+    public ResponseEntity<Collection<PostDto>> getFiveMostLikedLastWeek() throws IOException {
+        return ResponseEntity.ok(postService.getFiveMostLikedLastWeek());
+    }
+
+    @GetMapping("top-ten")
+    public ResponseEntity<Collection<PostDto>> getTopTenPosts() throws IOException {
+        return ResponseEntity.ok(postService.getTopTenMostLikedPosts());
     }
 }
