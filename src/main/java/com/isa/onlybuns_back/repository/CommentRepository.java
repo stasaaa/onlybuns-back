@@ -16,4 +16,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     // counts the number of comments made by a user in the last hour (restriction: no more than 60 comments allowed)
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.user.id = :userId AND c.creationTime > :oneHourAgo")
     long countRecentCommentsByUser(Long userId, Date oneHourAgo);
+
+    List<Comment> findByCreationTimeAfter(Date date);
 }
