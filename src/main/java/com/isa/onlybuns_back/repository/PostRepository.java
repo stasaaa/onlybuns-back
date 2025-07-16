@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -18,6 +19,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.creationTime < :oneMonthAgo AND p.compressed = false")
     List<Post> findImagesToCompress(LocalDate oneMonthAgo);
+
+    List<Post> findByCreationTimeAfter(Date date);
 
     long count();
 

@@ -71,6 +71,8 @@ public class AuthenticationService {
         if(!user.isActive()){
             throw new IllegalArgumentException("Account is not active");
         }
+        user.setLastLogin(new Date());
+        userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
         return  AuthenticationResponse
                 .builder()
