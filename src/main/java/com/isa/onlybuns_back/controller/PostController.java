@@ -4,6 +4,7 @@ import com.isa.onlybuns_back.dto.PostDto;
 import com.isa.onlybuns_back.image.FileStorageService;
 import com.isa.onlybuns_back.model.Address;
 import com.isa.onlybuns_back.model.Post;
+import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.service.PostService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
@@ -13,23 +14,21 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.security.Principal;
+import java.util.*;
 
 @RestController
 @RequestMapping("posts")
 public class PostController {
 
-    private final FileStorageService fileStorageService;
     private final PostService postService;
+    private final FileStorageService fileStorageService;
     private final UserService userService;
 
-    public PostController(PostService postService, UserService userService, FileStorageService fileStorageService, UserService userService1) {
+    public PostController(PostService postService, UserService userService, FileStorageService fileStorageService) {
         this.postService = postService;
         this.fileStorageService = fileStorageService;
-        this.userService = userService1;
+        this.userService = userService;
     }
 
     @PostMapping("create")
@@ -87,9 +86,28 @@ public class PostController {
     }
 
     @PostMapping("/{postId}/toggle-like")
-    public ResponseEntity<Void> toggleLike(@PathVariable Long postId, @RequestBody Map<String, Boolean> request) {
-        boolean liked = request.getOrDefault("liked", false);
-        postService.toggleLike(postId, liked);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Map<String, Object>> toggleLike(
+            @PathVariable Long postId,
+            @RequestBody Map<String, Object> payload) {
+
+        Long userId = Long.valueOf(payload.get("userId").toString());
+
+        postService.toggleLike(postId, userId);
+
+
+        Map<String, Object> response = postService.getLikeStatus(postId, userId);
+
+        return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/{postId}/liked-by/{userId}")
+    public ResponseEntity<Boolean> isLikedByUser(
+            @PathVariable Long postId,
+            @PathVariable Long userId) {
+
+        boolean liked = postService.isLikedByUser(postId, userId);
+        return ResponseEntity.ok(liked);
+    }
+
+
 }

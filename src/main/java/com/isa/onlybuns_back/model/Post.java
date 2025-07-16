@@ -1,7 +1,6 @@
 package com.isa.onlybuns_back.model;
 
 import jakarta.persistence.*;
-
 import java.util.Date;
 import java.util.List;
 
@@ -45,8 +44,9 @@ public class Post {
     @Column
     private Date creationTime;
 
-    @Column
-    private int likes;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Like> likes;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -65,7 +65,6 @@ public class Post {
         this.imagePaths = image;
         this.location = location;
         this.creationTime = creationTime;
-        this.likes = likes;
         this.user = user;
         this.comments = comments;
     }
@@ -110,12 +109,18 @@ public class Post {
 
     public void setCreationTime(Date creationTime) { this.creationTime = creationTime; }
 
-    public int getLikes() {
+    // IZMENJENO: umesto int likes
+    public List<Like> getLikes() {
         return likes;
     }
 
-    public void setLikes(int likes) {
+    public void setLikes(List<Like> likes) {
         this.likes = likes;
+    }
+
+
+    public int getLikesCount() {
+        return likes == null ? 0 : likes.size();
     }
 
     public User getUser() {

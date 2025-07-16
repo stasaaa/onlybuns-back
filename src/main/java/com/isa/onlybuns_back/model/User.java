@@ -160,4 +160,6 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return new ArrayList<GrantedAuthority>(this.userRole.getGrantedAuthority());
     }
+
+
 }
