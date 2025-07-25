@@ -52,8 +52,15 @@ public class AuthenticationService {
         userdto.setFirstName(user.getFirstName());
         userdto.setLastName(user.getLastName());
         userdto.setActive(user.isActive());
-        userdto.setAddress(addressMapper.addressToAddressDto(user.getAddress()));
+//        userdto.setAddress(addressMapper.addressToAddressDto(user.getAddress()));  -- Nzm zasto ne radi nigne mapper
         userdto.setUserRole(user.getUserRole());
+        userdto.getAddress().setCity(user.getAddress().getCity());
+        userdto.getAddress().setCountry(user.getAddress().getCountry());
+        userdto.getAddress().setPostalCode(user.getAddress().getPostalCode());
+        userdto.getAddress().setStreet(user.getAddress().getStreet());
+        userdto.getAddress().setNumber(user.getAddress().getNumber());
+        userdto.getAddress().setLatitude(user.getAddress().getLatitude());
+        userdto.getAddress().setLongitude(user.getAddress().getLongitude());
         return userdto;
     }
 
@@ -64,6 +71,8 @@ public class AuthenticationService {
         if(!user.isActive()){
             throw new IllegalArgumentException("Account is not active");
         }
+        user.setLastLogin(new Date());
+        userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
         return  AuthenticationResponse
                 .builder()
@@ -85,6 +94,7 @@ public class AuthenticationService {
         }
 
         User user = new User();
+//        TODO: promeniti u mapper
         user.setUsername(userDto.getUsername());
         user.setEmail(userDto.getEmail());
         user.setFirstName(userDto.getFirstName());
@@ -94,6 +104,8 @@ public class AuthenticationService {
         user.getAddress().setPostalCode(userDto.getAddress().getPostalCode());
         user.getAddress().setStreet(userDto.getAddress().getStreet());
         user.getAddress().setNumber(userDto.getAddress().getNumber());
+        user.getAddress().setLatitude(userDto.getAddress().getLatitude());
+        user.getAddress().setLongitude(userDto.getAddress().getLongitude());
         user.setActive(false);
         user.setUserRole(UserRole.REGISTERED);
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
@@ -137,5 +149,15 @@ public class AuthenticationService {
     public Collection<UserDto> getAll() {
         List<User> users = userRepository.findAll();
         return userMapper.usersToUserDTOs(users);
+    }
+
+
+    public UserDto updatePassword(UserDto userDto) {
+        User user = userRepository.findById(userDto.getId()).orElse(null);
+        if (user != null) {
+            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+            userRepository.save(user);
+        }
+        return userDto;
     }
 }

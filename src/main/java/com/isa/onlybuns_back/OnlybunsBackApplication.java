@@ -7,9 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 public class OnlybunsBackApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(OnlybunsBackApplication.class, args);
 	}
-
 }

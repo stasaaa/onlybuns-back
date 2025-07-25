@@ -1,7 +1,11 @@
 package com.isa.onlybuns_back.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class AddressDto {
     @NotBlank(message = "Country is required")
     private String country;
@@ -13,6 +17,10 @@ public class AddressDto {
     private String street;
     @NotBlank(message = "Country is required")
     private String number;
+    @NotBlank(message = "Latitude is required")
+    private Double latitude;
+    @NotBlank(message = "Longitude is required")
+    private Double longitude;
 
     public @NotBlank(message = "Country is required") String getCountry() {
         return country;

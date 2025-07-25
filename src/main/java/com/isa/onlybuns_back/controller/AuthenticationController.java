@@ -55,13 +55,18 @@ public class AuthenticationController {
     @PostMapping("register")
     public ResponseEntity<Boolean> register(@Valid @RequestBody UserDto userDto) {
         var ret = authentificationService.register(userDto);
-        return ResponseEntity.ok(ret)  ;
+        return ResponseEntity.ok(ret) ;
     }
 
     @GetMapping("activate")
     public ResponseEntity<AuthenticationResponse> activateAccount(@RequestParam String token) {
         var ret = this.authentificationService.activateAccount(token);
         return ResponseEntity.ok(ret);
+    }
+
+    @PutMapping("update-password")
+    public ResponseEntity<UserDto> updatePassword(@RequestBody UserDto userDto) {
+        return ResponseEntity.ok(authentificationService.updatePassword(userDto));
     }
 
     @GetMapping("userDetails")

@@ -3,6 +3,7 @@ package com.isa.onlybuns_back.service;
 import com.isa.onlybuns_back.dto.PostDto;
 import com.isa.onlybuns_back.image.FileStorageService;
 import com.isa.onlybuns_back.model.Like;
+import com.isa.onlybuns_back.model.Address;
 import com.isa.onlybuns_back.model.Post;
 import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.repository.LikeRepository;
@@ -10,10 +11,15 @@ import com.isa.onlybuns_back.repository.PostRepository;
 import com.isa.onlybuns_back.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
+import java.util.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -138,5 +144,151 @@ public class PostService {
         response.put("liked", liked);
         response.put("likesCount", likesCount);
         return response;
+    }
+
+    public Map<String, Long> getPostQuantity() {
+        long all = postRepository.count();
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MONTH, -1);
+        Date lastMonthDate = calendar.getTime();
+        long lastMonth = postRepository.countPostsFromLastMonth(lastMonthDate);
+
+        Map<String, Long> result = new HashMap<>();
+        result.put("totalPosts", all);
+        result.put("lastMonthPosts", lastMonth);
+        return result;
+    }
+
+    public Collection<PostDto> getFiveMostLikedLastWeek() throws IOException {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, -7);  // Datum od pre 7 dana
+        Date sevenDaysAgo = calendar.getTime();
+
+        Pageable topFive = (Pageable) PageRequest.of(0, 5);
+
+        List<Post> posts = postRepository.getFiveMostLikedLastWeek(sevenDaysAgo, topFive);
+        Collection<PostDto> postDtos = new ArrayList<>();
+        for (Post post : posts) {
+            PostDto postDto = new PostDto();
+            postDto.setDescription(post.getDescription());
+            postDto.setId(post.getId());
+            postDto.setAddress(post.getLocation());
+            postDto.setUserId(post.getUser().getId());
+            postDto.setCreationTime(post.getCreationTime());
+            postDto.setLikes(post.getLikesCount());
+            try{
+                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
+            } catch (IOException e) {
+                throw new IOException(e);
+            }
+
+            postDtos.add(postDto);
+        }
+        return postDtos;
+    }
+
+    public Collection<PostDto> getTopTenMostLikedPosts() throws IOException {
+        Pageable topTen = (Pageable) PageRequest.of(0, 10);  // Podesi broj na 10
+        List<Post> posts = postRepository.getTopTenMostLikedPosts(topTen);
+        Collection<PostDto> postDtos = new ArrayList<>();
+        for (Post post : posts) {
+            PostDto postDto = new PostDto();
+            postDto.setDescription(post.getDescription());
+            postDto.setId(post.getId());
+            postDto.setAddress(post.getLocation());
+            postDto.setUserId(post.getUser().getId());
+            postDto.setCreationTime(post.getCreationTime());
+            postDto.setLikes(post.getLikesCount());
+            try{
+                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
+            } catch (IOException e) {
+                throw new IOException(e);
+            }
+
+            postDtos.add(postDto);
+        }
+        return postDtos;
+    }
+
+    public Collection<PostDto> getPaged(int page, int pageSize, String username) throws IOException {
+        // Create pageable instance
+        Pageable pageable = PageRequest.of(page, pageSize);
+
+        // Fetch paginated posts for the specific user by username
+        Page<Post> posts = postRepository.findByUsernamePaged(username, pageable);
+
+        // Convert posts to PostDto
+        Collection<PostDto> postDtos = new ArrayList<>();
+        for (Post post : posts) {
+            PostDto postDto = new PostDto();
+            postDto.setDescription(post.getDescription());
+            postDto.setId(post.getId());
+            postDto.setAddress(post.getLocation());
+            postDto.setUserId(post.getUser().getId());
+            postDto.setCreationTime(post.getCreationTime());
+            postDto.setLikes(post.getLikesCount());
+            try {
+                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
+            } catch (IOException e) {
+                throw new IOException(e);
+            }
+            postDtos.add(postDto);
+        }
+        return postDtos;
+    }
+
+    public Collection<PostDto> getPostsNear(Address address, int page, int pageSize) throws IOException {
+        double userLat = address.getLatitude();
+        double userLon = address.getLongitude();
+
+        // Assume posts is a list of all posts (to be retrieved from a database)
+        List<Post> allPosts = postRepository.findAll();
+
+        // Filter posts within the 500m radius
+        List<Post> filteredPosts = allPosts.stream()
+                .filter(post -> {
+                    double postLat = post.getLocation().getLatitude();
+                    double postLon = post.getLocation().getLongitude();
+                    return haversine(userLat, userLon, postLat, postLon) <= 500;
+                })
+                .skip((long) page * pageSize)
+                .limit(pageSize)
+                .toList();
+
+        Collection<PostDto> postDtos = new ArrayList<>();
+        for (Post post : filteredPosts) {
+            PostDto postDto = new PostDto();
+            postDto.setDescription(post.getDescription());
+            postDto.setId(post.getId());
+            postDto.setAddress(post.getLocation());
+            postDto.setUserId(post.getUser().getId());
+            postDto.setCreationTime(post.getCreationTime());
+            postDto.setLikes(post.getLikesCount());
+            try {
+                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
+            } catch (IOException e) {
+                throw new IOException(e);
+            }
+            postDtos.add(postDto);
+        }
+        return postDtos;
+    }
+
+    // Method to convert degrees to radians
+    private static double toRadians(double degree) {
+        return degree * (Math.PI / 180);
+    }
+
+    // Haversine formula to calculate distance between two lat/lng points
+    private static double haversine(double lat1, double lon1, double lat2, double lon2) {
+        final double R = 6371000; // Radius of the earth in meters
+        double latDistance = toRadians(lat2 - lat1);
+        double lonDistance = toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2) +
+                Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+                        Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Distance in meters
     }
 }

@@ -84,7 +84,8 @@ public class SecurityConfig {
                                 "analytics/**",
                                 "/group-chat/**",
                                 "/users",
-                                "/ws/**"
+                                "/ws/**",
+                                "queue/**"
                         ).permitAll()
                         .anyRequest()
                         .authenticated()
