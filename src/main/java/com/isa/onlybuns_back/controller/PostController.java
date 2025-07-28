@@ -1,10 +1,8 @@
 package com.isa.onlybuns_back.controller;
-
 import com.isa.onlybuns_back.dto.PostDto;
 import com.isa.onlybuns_back.image.FileStorageService;
 import com.isa.onlybuns_back.model.Address;
 import com.isa.onlybuns_back.model.Post;
-import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.service.PostService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
@@ -12,15 +10,11 @@ import com.isa.onlybuns_back.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.security.Principal;
-import java.util.*;
+
 
 @RestController
 @RequestMapping("posts")
@@ -145,5 +139,6 @@ public class PostController {
 
         return ResponseEntity.ok(postService.getPostsNear(userAddress, page, pageSize));
     }
+
 
 }

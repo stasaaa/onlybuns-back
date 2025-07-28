@@ -8,6 +8,7 @@ import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.repository.CommentRepository;
 import com.isa.onlybuns_back.repository.PostRepository;
 import com.isa.onlybuns_back.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -78,5 +79,19 @@ public class CommentService {
         comment.setContent(dto.getContent());
         comment.setCreationTime(new Date());
         return comment;
+    }
+
+    @Transactional
+    public void deleteComment(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+        Post post = comment.getPost();
+        if (post != null) {
+            post.getComments().remove(comment);  // ukloni komentar iz liste komentara posta
+            comment.setPost(null);                // raskini vezu u comment entitetu
+        }
+
+        commentRepository.delete(comment);
     }
 }

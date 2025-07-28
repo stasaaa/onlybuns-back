@@ -21,6 +21,7 @@ public class FollowingService {
     private final FollowingRepository followingRepository;
     private final UserRepository userRepository;
 
+    // Evidencija po korisniku da se ograniči na max 50 praćenja u minuti
     private final Map<String, List<Long>> followTimestamps = new ConcurrentHashMap<>();
 
     private boolean canFollow(String username) {
@@ -28,13 +29,19 @@ public class FollowingService {
         followTimestamps.putIfAbsent(username, new ArrayList<>());
         List<Long> timestamps = followTimestamps.get(username);
 
+        // ukloni sve starije od 60 sekundi
         timestamps.removeIf(ts -> now - ts > 60_000);
+
         if (timestamps.size() >= 50) {
             return false;
         }
-
         timestamps.add(now);
         return true;
+    }
+
+    public long countFollowing(String username) {
+        User user = userRepository.findByUsername(username);
+        return followingRepository.countByFollower(user);
     }
 
     @Transactional
@@ -44,23 +51,22 @@ public class FollowingService {
         }
 
         User follower = userRepository.findByUsername(followerUsername);
-        User followed = userRepository.findByUsername(followedUsername);
+        // Zaključavanje target user-a za siguran upis (sprečava dupli insert)
+        User followed = userRepository.findWithLockingByUsername(followedUsername);
 
         if (follower == null || followed == null || follower.equals(followed)) {
             throw new RuntimeException("Invalid follow request.");
         }
-
         if (follower.getUserRole() == UserRole.ADMIN) {
             throw new RuntimeException("Admins cannot follow users.");
         }
-
         if (followingRepository.existsByFollowerAndFollowed(follower, followed)) {
             throw new RuntimeException("Already following.");
         }
 
-        // Simulacija konkurentnog pristupa
+        // simulacija za konkurentno testiranje
         try {
-            Thread.sleep(100); // testna pauza
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -72,11 +78,9 @@ public class FollowingService {
     public void unfollow(String followerUsername, String followedUsername) {
         User follower = userRepository.findByUsername(followerUsername);
         User followed = userRepository.findByUsername(followedUsername);
-
         if (follower == null || followed == null) {
             throw new RuntimeException("Invalid unfollow request.");
         }
-
         followingRepository.deleteByFollowerAndFollowed(follower, followed);
     }
 

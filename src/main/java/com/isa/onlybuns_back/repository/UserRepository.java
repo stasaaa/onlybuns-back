@@ -11,13 +11,13 @@ import org.springframework.stereotype.Repository;
 import java.awt.print.Pageable;
 import java.util.Date;
 import java.util.List;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     User findByActivationToken(String token);
-
     User findByEmail(String email);
-
     User findByUsername(String username);
     List<User> findByLastLoginBefore(Date date);
 
@@ -32,6 +32,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT COUNT(u) FROM User u WHERE SIZE(u.posts) = 0 AND SIZE(u.comments) > 0")
     long countUsersWithOnlyComments();
 
-
-
+    //pesimistic lock for following
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT u FROM User u WHERE u.username = :username")
+    User findWithLockingByUsername(@Param("username") String username);
 }

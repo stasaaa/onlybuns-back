@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/following")
@@ -19,23 +20,45 @@ public class FollowingController {
     @PostMapping("/follow/{username}")
     public ResponseEntity<?> follow(@PathVariable String username, Principal principal) {
         followingService.follow(principal.getName(), username);
-        return ResponseEntity.ok("Followed");
+        return ResponseEntity.ok(Map.of("status", "followed"));
     }
 
     @DeleteMapping("/unfollow/{username}")
     public ResponseEntity<?> unfollow(@PathVariable String username, Principal principal) {
         followingService.unfollow(principal.getName(), username);
-        return ResponseEntity.ok("Unfollowed");
+        return ResponseEntity.ok(Map.of("status", "unfollowed"));
     }
 
+    // Lista korisnika koje ja pratim
     @GetMapping("/followed")
     public List<User> getFollowed(Principal principal) {
         return followingService.getFollowedUsers(principal.getName());
     }
 
+    // Lista mojih pratilaca
     @GetMapping("/followers")
     public List<User> getFollowers(Principal principal) {
         return followingService.getFollowers(principal.getName());
     }
-}
 
+    // Broj pratilaca (kao JSON)
+    @GetMapping("/{username}/followers/count")
+    public ResponseEntity<Map<String, Long>> countFollowers(@PathVariable String username) {
+        long count = followingService.countFollowers(username);
+        return ResponseEntity.ok(Map.of("count", count));
+    }
+
+    // Broj koje korisnik prati (kao JSON)
+    @GetMapping("/{username}/following/count")
+    public ResponseEntity<Map<String, Long>> countFollowing(@PathVariable String username) {
+        long count = followingService.countFollowing(username);
+        return ResponseEntity.ok(Map.of("count", count));
+    }
+
+    // Provera da li je trenutno ulogovani korisnik već zapratio
+    @GetMapping("/is-following/{username}")
+    public ResponseEntity<Map<String, Boolean>> isFollowing(@PathVariable String username, Principal principal) {
+        boolean following = followingService.isFollowing(principal.getName(), username);
+        return ResponseEntity.ok(Map.of("isFollowing", following));
+    }
+}

@@ -85,7 +85,9 @@ public class SecurityConfig {
                                 "/group-chat/**",
                                 "/users",
                                 "/ws/**",
-                                "queue/**"
+                                "queue/**",
+                                "/posts/*/image"
+
                         ).permitAll()
                         .anyRequest()
                         .authenticated()
