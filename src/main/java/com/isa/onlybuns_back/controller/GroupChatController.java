@@ -69,4 +69,17 @@ public class GroupChatController {
         return groupChatService.getGroupMembers(groupId);
     }
 
+    @GetMapping("/{groupId}/messages/user/{userId}")
+    public List<MessageDTO> getMessagesForUser(@PathVariable Long groupId, @PathVariable Long userId) {
+        List<Message> messages = groupChatService.getMessagesForUser(groupId, userId);
+        return messages.stream()
+                .map(msg -> new MessageDTO(
+                        msg.getContent(),
+                        msg.getSender() != null ? msg.getSender().getUsername() : "SYSTEM",
+                        msg.getTimestamp()
+                ))
+                .collect(Collectors.toList());
+    }
+
+
 }

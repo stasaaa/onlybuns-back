@@ -86,7 +86,8 @@ public class SecurityConfig {
                                 "/users",
                                 "/ws/**",
                                 "queue/**",
-                                "/posts/*/image"
+                                "/posts/*/image",
+                                "/hello"
 
                         ).permitAll()
                         .anyRequest()

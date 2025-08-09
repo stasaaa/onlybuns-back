@@ -5,6 +5,8 @@ import com.isa.onlybuns_back.model.Address;
 import com.isa.onlybuns_back.model.Post;
 import com.isa.onlybuns_back.service.PostService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import com.isa.onlybuns_back.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -62,10 +64,17 @@ public class PostController {
     }
 
     @GetMapping("all")
-    public ResponseEntity<Collection<PostDto>> getAllPosts() throws IOException {
+    public ResponseEntity<Collection<PostDto>> getAllPosts(HttpServletRequest request) throws IOException {
         Collection<PostDto> ret = postService.findAll();
-        return ResponseEntity.ok(ret);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-Backend-Port", String.valueOf(request.getLocalPort())); // dodajemo port u header
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(ret);
     }
+
 
     @DeleteMapping("{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

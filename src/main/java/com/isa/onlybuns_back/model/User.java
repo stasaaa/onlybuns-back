@@ -69,7 +69,6 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
-    // Nema više @ManyToMany jer koristimo tabelu `followings` kroz entitet Following
 
     public User() {}
 
@@ -96,7 +95,6 @@ public class User implements UserDetails {
     public boolean isAccountNonLocked() {
         return true;
     }
-
     @Override
     public boolean isCredentialsNonExpired() {
         return true;

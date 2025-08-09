@@ -2,6 +2,7 @@ package com.isa.onlybuns_back.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
+@Profile("loadbalancer")
 public class LoadBalancerController {
 
     private final List<String> backendServers = List.of(

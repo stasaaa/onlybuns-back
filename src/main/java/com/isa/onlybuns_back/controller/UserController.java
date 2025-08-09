@@ -3,6 +3,10 @@ package com.isa.onlybuns_back.controller;
 import com.isa.onlybuns_back.dto.UserDto;
 import com.isa.onlybuns_back.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,9 +22,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping
-    public List<UserDto> findAll() { return userService.findAll(); }
-
     @GetMapping("{id}")
     public UserDto findById(@PathVariable long id) {
         return userService.findById(id);
@@ -35,5 +36,46 @@ public class UserController {
     public UserDto findByUsername(@PathVariable String username) {
         return userService.findByUsername(username);
     }
+
+    @GetMapping
+    public ResponseEntity<Page<UserDto>> findAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) String searchQuery,
+            @RequestParam(required = false) Integer minPosts,
+            @RequestParam(required = false) Integer maxPosts,
+            @RequestParam(defaultValue = "email") String sort,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        List<String> allowedSortFields = List.of("email", "username", "firstName", "lastName");
+
+        String sortField = allowedSortFields.contains(sort) ? sort : "email";
+
+        Sort sortOrder = Sort.by(Sort.Direction.fromString(direction), sortField);
+
+        Pageable pageable = PageRequest.of(page, size, sortOrder);
+
+        Page<UserDto> usersPage = userService.findAllFiltered(
+                (searchQuery != null && !searchQuery.isBlank()) ? searchQuery : null,
+                minPosts,
+                maxPosts,
+                pageable
+        );
+
+        return ResponseEntity.ok(usersPage);
+    }
+
+    @GetMapping("/test-all")
+    public List<UserDto> testFindAll() {
+        return userService.findAll(); // Ovo vraća listu svih korisnika bez paginacije
+    }
+
+    @GetMapping("/test-page")
+    public Page<UserDto> testPage() {
+        Pageable pageable = PageRequest.of(0, 5);
+        return userService.findAllFiltered(null, null, null, pageable);
+    }
+
+
 }
 

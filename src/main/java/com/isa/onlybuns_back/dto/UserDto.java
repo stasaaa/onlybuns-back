@@ -46,6 +46,8 @@ public class UserDto {
 
     private int numberOfFollowing = 0;
 
+
+
     public @Email(message = "Email should be valid") @NotBlank(message = "Email is required") String getEmail() {
         return email;
     }

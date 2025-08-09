@@ -1,6 +1,5 @@
 package com.isa.onlybuns_back.model;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,13 +21,9 @@ public class GroupChat {
     @ManyToOne
     private User admin;
 
-    @ManyToMany
-    @JoinTable(
-            name = "groupchat_user",
-            joinColumns = @JoinColumn(name = "groupchat_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private List<User> members = new ArrayList<>();
+    // Sada koristimo OneToMany na GroupChatMember entitet
+    @OneToMany(mappedBy = "groupChat", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GroupChatMember> members = new ArrayList<>();
 
     @OneToMany(mappedBy = "groupChat", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages = new ArrayList<>();
