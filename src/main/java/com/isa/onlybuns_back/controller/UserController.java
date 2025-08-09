@@ -1,6 +1,7 @@
 package com.isa.onlybuns_back.controller;
 
 import com.isa.onlybuns_back.dto.UserDto;
+import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -65,17 +67,28 @@ public class UserController {
         return ResponseEntity.ok(usersPage);
     }
 
-    @GetMapping("/test-all")
-    public List<UserDto> testFindAll() {
-        return userService.findAll(); // Ovo vraća listu svih korisnika bez paginacije
+
+    @GetMapping("/all")
+    public ResponseEntity<List<UserDto>> getAllForGroupChat(@RequestParam Long currentUserId) {
+        try {
+            List<UserDto> users = userService.getAllUsersForGroupDialog(currentUserId);
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+
+            System.err.println("Error getting users for group chat: " + e.getMessage());
+            return ResponseEntity.ok(List.of());
+        }
     }
 
-    @GetMapping("/test-page")
-    public Page<UserDto> testPage() {
-        Pageable pageable = PageRequest.of(0, 5);
-        return userService.findAllFiltered(null, null, null, pageable);
+    @GetMapping("/simple")
+    public ResponseEntity<List<UserDto>> getAllSimple() {
+        try {
+            List<UserDto> users = userService.findAll();
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            System.err.println("Error getting all users: " + e.getMessage());
+            return ResponseEntity.ok(List.of());
+        }
     }
-
-
 }
 

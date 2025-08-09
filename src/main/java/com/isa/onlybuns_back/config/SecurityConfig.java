@@ -84,6 +84,7 @@ public class SecurityConfig {
                                 "analytics/**",
                                 "/group-chat/**",
                                 "/users",
+                                "/users/all",
                                 "/ws/**",
                                 "queue/**",
                                 "/posts/*/image",

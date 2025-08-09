@@ -52,27 +52,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
                             Pageable pageable);
 
 
-    @Query("""
-        SELECT u, COUNT(f.id) AS followingCount, SIZE(u.posts) AS postCount
-        FROM User u
-        LEFT JOIN Following f ON f.follower = u
-        WHERE (:searchQuery IS NULL OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :searchQuery, '%'))
-               OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :searchQuery, '%'))
-               OR LOWER(u.email) LIKE (CONCAT('%', :searchQuery, '%')))
-          AND (:minPosts IS NULL OR SIZE(u.posts) >= :minPosts)
-          AND (:maxPosts IS NULL OR SIZE(u.posts) <= :maxPosts)
-        GROUP BY u
-    """)
-    Page<Object[]> findAllWithFollowingAndPosts(
-            @Param("searchQuery") String searchQuery,
-            @Param("minPosts") Integer minPosts,
-            @Param("maxPosts") Integer maxPosts,
-            Pageable pageable
-    );
 
     @Query("SELECT COUNT(f) FROM Following f WHERE f.follower.id = :userId")
     long countFollowingByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT u FROM User u")
+    List<User> findAllSimple();
+
+    @Query("SELECT u FROM User u WHERE u.id <> :currentUserId")
+    List<User> findAllExceptCurrent(@Param("currentUserId") Long currentUserId);
 
 
 

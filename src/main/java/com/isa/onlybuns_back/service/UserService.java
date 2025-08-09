@@ -94,6 +94,25 @@ public class UserService {
     }
 
 
+    public List<UserDto> getAllUsersForGroupDialog(Long currentUserId) {
+        if (currentUserId == null) {
+            return List.of();
+        }
+
+        try {
+            return userRepository.findAllExceptCurrent(currentUserId)
+                    .stream()
+                    .map(UserDto::new)  // koristi direktno konstruktor DTO klase
+                    .toList();
+
+        } catch (Exception e) {
+            System.err.println("Error in getAllUsersForGroupDialog: " + e.getMessage());
+            return List.of();
+        }
+    }
+
+
+
 
 
 }
