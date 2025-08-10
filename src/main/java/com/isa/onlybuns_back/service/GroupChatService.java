@@ -201,11 +201,11 @@ public class GroupChatService {
     }
 
     public List<UserDto> getGroupMembers(Long groupId) {
-        GroupChat group = groupChatRepository.findById(groupId)
+        GroupChat group = groupChatRepository.findByIdWithMembers(groupId)
                 .orElseThrow(() -> new EntityNotFoundException("Group not found with id " + groupId));
 
         return group.getMembers().stream()
-                .map(GroupChatMember::getUser)  // Izvući User iz GroupChatMember
+                .map(GroupChatMember::getUser)
                 .map(UserDto::new)
                 .collect(Collectors.toList());
     }

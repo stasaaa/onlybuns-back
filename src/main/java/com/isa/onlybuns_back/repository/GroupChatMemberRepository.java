@@ -4,6 +4,9 @@ import com.isa.onlybuns_back.model.GroupChatMember;
 import com.isa.onlybuns_back.model.GroupChat;
 import com.isa.onlybuns_back.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -11,4 +14,5 @@ public interface GroupChatMemberRepository extends JpaRepository<GroupChatMember
     Optional<GroupChatMember> findByGroupChatAndUser(GroupChat groupChat, User user);
 
     List<GroupChatMember> findByUser(User user);  // ovo ti treba
+
 }
