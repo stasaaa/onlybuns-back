@@ -6,6 +6,7 @@ import com.isa.onlybuns_back.model.Post;
 import com.isa.onlybuns_back.service.PostService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import com.isa.onlybuns_back.service.UserService;
@@ -43,7 +44,7 @@ public class PostController {
         byte[] imageBytes = imageFile.getBytes();
         PostDto postDto = new PostDto();
         postDto.setDescription(description);
-        postDto.setImage(imageBytes);
+
         postDto.setUserId(userId);
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -147,6 +148,65 @@ public class PostController {
         Address userAddress = objectMapper.readValue(address, Address.class);
 
         return ResponseEntity.ok(postService.getPostsNear(userAddress, page, pageSize));
+    }
+
+    @GetMapping("/{postId}/image")
+    public ResponseEntity<byte[]> getPostImage(
+            @PathVariable Long postId,
+            @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
+            @RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSince
+    ) throws IOException {
+
+        Post post = postService.findPostEntityById(postId);
+        if (post == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Učitaj sliku kao bajtove
+        byte[] imageBytes = fileStorageService.getImage(post.getImagePaths());
+
+        // Generiši ETag na osnovu sadržaja slike (hash)
+        String eTag = "\"" + Integer.toHexString(java.util.Arrays.hashCode(imageBytes)) + "\"";
+
+        // Uzmi vreme poslednje izmene fajla (ili iz baze ako imaš)
+        // Ovde pretpostavimo da imaš metod u postService koji vraća vreme poslednje izmene slike
+        long lastModifiedMillis = postService.getImageLastModified(post);
+        // Formatiraj vreme u HTTP format
+        java.time.format.DateTimeFormatter formatter =
+                java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME.withZone(java.time.ZoneId.of("GMT"));
+        String lastModified = formatter.format(java.time.Instant.ofEpochMilli(lastModifiedMillis));
+
+        // Provera ETag
+        if (ifNoneMatch != null && ifNoneMatch.equals(eTag)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                    .cacheControl(CacheControl.maxAge(86400, java.util.concurrent.TimeUnit.SECONDS).cachePublic())
+                    .eTag(eTag)
+                    .build();
+        }
+
+        // Provera Last-Modified
+        if (ifModifiedSince != null) {
+            try {
+                long ifModifiedSinceMillis = java.time.ZonedDateTime.parse(ifModifiedSince, formatter).toInstant().toEpochMilli();
+                if (ifModifiedSinceMillis >= lastModifiedMillis) {
+                    return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                            .cacheControl(CacheControl.maxAge(86400, java.util.concurrent.TimeUnit.SECONDS).cachePublic())
+                            .eTag(eTag)
+                            .lastModified(lastModifiedMillis)
+                            .build();
+                }
+            } catch (Exception e) {
+
+            }
+        }
+
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(86400, java.util.concurrent.TimeUnit.SECONDS).cachePublic())
+                .eTag(eTag)
+                .lastModified(lastModifiedMillis)
+                .contentType(org.springframework.http.MediaType.IMAGE_JPEG) // ili PNG po potrebi
+                .body(imageBytes);
     }
 
 

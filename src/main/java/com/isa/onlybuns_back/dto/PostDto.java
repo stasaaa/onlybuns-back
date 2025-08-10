@@ -16,7 +16,6 @@ import java.util.List;
 public class PostDto {
     private long id;
     private String description;
-    private byte[] image;
     private long userId;
     private Address address;
     private Date creationTime;

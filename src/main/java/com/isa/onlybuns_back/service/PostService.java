@@ -16,6 +16,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.io.IOException;
 import java.util.*;
@@ -72,7 +75,6 @@ public class PostService {
         postDto.setAddress(post.getLocation());
         postDto.setUserId(post.getUser().getId());
         postDto.setId(post.getId());
-        postDto.setImage(image);
         postDto.setLikes(post.getLikesCount());
         return postDto;
     }
@@ -101,11 +103,7 @@ public class PostService {
             postDto.setUserId(post.getUser().getId());
             postDto.setCreationTime(post.getCreationTime());
             postDto.setLikes(post.getLikesCount());
-            try {
-                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
-            } catch (IOException e) {
-                throw new IOException(e);
-            }
+
 
             postDtos.add(postDto);
         }
@@ -177,11 +175,7 @@ public class PostService {
             postDto.setUserId(post.getUser().getId());
             postDto.setCreationTime(post.getCreationTime());
             postDto.setLikes(post.getLikesCount());
-            try{
-                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
-            } catch (IOException e) {
-                throw new IOException(e);
-            }
+
 
             postDtos.add(postDto);
         }
@@ -200,11 +194,7 @@ public class PostService {
             postDto.setUserId(post.getUser().getId());
             postDto.setCreationTime(post.getCreationTime());
             postDto.setLikes(post.getLikesCount());
-            try{
-                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
-            } catch (IOException e) {
-                throw new IOException(e);
-            }
+
 
             postDtos.add(postDto);
         }
@@ -228,11 +218,7 @@ public class PostService {
             postDto.setUserId(post.getUser().getId());
             postDto.setCreationTime(post.getCreationTime());
             postDto.setLikes(post.getLikesCount());
-            try {
-                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
-            } catch (IOException e) {
-                throw new IOException(e);
-            }
+
             postDtos.add(postDto);
         }
         return postDtos;
@@ -265,11 +251,7 @@ public class PostService {
             postDto.setUserId(post.getUser().getId());
             postDto.setCreationTime(post.getCreationTime());
             postDto.setLikes(post.getLikesCount());
-            try {
-                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
-            } catch (IOException e) {
-                throw new IOException(e);
-            }
+
             postDtos.add(postDto);
         }
         return postDtos;
@@ -290,6 +272,19 @@ public class PostService {
                         Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c; // Distance in meters
+    }
+
+    public Post findPostEntityById(Long id) {
+        return postRepository.findById(id).orElse(null);
+    }
+
+    public long getImageLastModified(Post post) {
+        Path imagePath = Paths.get(post.getImagePaths());
+        try {
+            return Files.getLastModifiedTime(imagePath).toMillis();
+        } catch (IOException e) {
+            return System.currentTimeMillis(); // fallback ako nema info
+        }
     }
 
 

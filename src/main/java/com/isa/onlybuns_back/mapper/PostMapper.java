@@ -10,7 +10,6 @@ public class PostMapper {
         PostDto dto = new PostDto();
         dto.setId(post.getId());
         dto.setDescription(post.getDescription());
-        dto.setImage(image);
         dto.setUserId(post.getUser().getId());
         dto.setUsername(post.getUser().getUsername());
         dto.setAddress(post.getLocation());
