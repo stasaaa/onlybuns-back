@@ -28,13 +28,27 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     long countPostsFromLastMonth(@Param("startDate") Date startDate);
 
 //    TODO: Skroz promeniti ovo kada se lajkovi poprave
-    @Query("SELECT p FROM Post p WHERE p.creationTime >= :sevenDaysAgo ORDER BY p.likes DESC")
+   // @Query("SELECT p FROM Post p WHERE p.creationTime >= :sevenDaysAgo ORDER BY p.likes DESC")
+   // List<Post> getFiveMostLikedLastWeek(@Param("sevenDaysAgo") Date sevenDaysAgo, Pageable pageable);
+
+  //  @Query("SELECT p FROM Post p ORDER BY p.likes DESC")
+  //  List<Post> getTopTenMostLikedPosts(Pageable pageable);
+
+  //  Page<Post> findAll(Pageable pageable);
+
+    @Query("SELECT p FROM Post p " +
+            "LEFT JOIN p.likes l " +
+            "WHERE p.creationTime >= :sevenDaysAgo " +
+            "GROUP BY p " +
+            "ORDER BY COUNT(l) DESC")
     List<Post> getFiveMostLikedLastWeek(@Param("sevenDaysAgo") Date sevenDaysAgo, Pageable pageable);
 
-    @Query("SELECT p FROM Post p ORDER BY p.likes DESC")
+    @Query("SELECT p FROM Post p " +
+            "LEFT JOIN p.likes l " +
+            "GROUP BY p " +
+            "ORDER BY COUNT(l) DESC")
     List<Post> getTopTenMostLikedPosts(Pageable pageable);
-
-    Page<Post> findAll(Pageable pageable);
+//ova dva querija mi je dao chatgpt - ja sam ih nalepila da ne bi bilo errora, feel free to change them
 
     @Query("SELECT p FROM Post p WHERE p.user.username = :username")
     Page<Post> findByUsernamePaged(@Param("username") String username, Pageable pageable);

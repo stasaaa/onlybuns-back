@@ -2,32 +2,45 @@ package com.isa.onlybuns_back.service;
 
 import com.isa.onlybuns_back.dto.PostDto;
 import com.isa.onlybuns_back.image.FileStorageService;
+import com.isa.onlybuns_back.model.Like;
 import com.isa.onlybuns_back.model.Address;
 import com.isa.onlybuns_back.model.Post;
 import com.isa.onlybuns_back.model.User;
+import com.isa.onlybuns_back.repository.LikeRepository;
 import com.isa.onlybuns_back.repository.PostRepository;
 import com.isa.onlybuns_back.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class PostService {
+
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
+    private final LikeRepository likeRepository;
 
     @Autowired
-    public PostService(PostRepository postRepository, UserRepository userRepository, FileStorageService fileStorageService) {
+    public PostService(PostRepository postRepository,
+                       UserRepository userRepository,
+                       FileStorageService fileStorageService,
+                       LikeRepository likeRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
+        this.likeRepository = likeRepository;
     }
 
     public PostDto create(PostDto postDto, String imagePath) throws IOException {
@@ -39,7 +52,6 @@ public class PostService {
             post.setImagePaths(imagePath);
             post.setLocation(postDto.getAddress());
             post.setCreationTime(new Date());
-            post.setLikes(0);
             post.setComments(new ArrayList<>());
 
             postRepository.save(post);
@@ -53,31 +65,27 @@ public class PostService {
     }
 
     public PostDto findById(long id) throws IOException {
-        // Fetch the post from repository
         Post post = postRepository.findById(id).orElse(null);
-        if (post == null) {
-            return null;  // Or throw an exception if you want to handle this case
-        }
+        if (post == null) return null;
 
-        // Get the image bytes
         byte[] image = fileStorageService.getImage(post.getImagePaths());
 
-        // Create a new PostDto
         PostDto postDto = new PostDto();
         postDto.setDescription(post.getDescription());
         postDto.setAddress(post.getLocation());
         postDto.setUserId(post.getUser().getId());
         postDto.setId(post.getId());
-        postDto.setImage(image);
-
-        return postDto;  // Correct return
+        postDto.setLikes(post.getLikesCount());
+        return postDto;
     }
 
     public Optional<PostDto> update(long id, PostDto postDto) {
         Post post = postRepository.findById(id).orElse(null);
+        if (post == null) return Optional.empty();
+
         post.setDescription(postDto.getDescription());
         postRepository.save(post);
-        return postDto.equals(post) ? Optional.of(postDto) : Optional.empty();
+        return Optional.of(postDto);
     }
 
     public List<Post> getByUserId(Long userId) {
@@ -94,28 +102,46 @@ public class PostService {
             postDto.setAddress(post.getLocation());
             postDto.setUserId(post.getUser().getId());
             postDto.setCreationTime(post.getCreationTime());
-            postDto.setLikes(post.getLikes());
-            try{
-                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
-            } catch (IOException e) {
-                throw new IOException(e);
-            }
+            postDto.setLikes(post.getLikesCount());
+
 
             postDtos.add(postDto);
         }
         return postDtos;
     }
-    public void toggleLike(Long postId, boolean liked) {
-        Post post = postRepository.findById(postId).orElse(null);
 
-        // Increase or decrease likes based on the `liked` parameter
-        if (liked) {
-            post.setLikes(post.getLikes() + 1); // Increment likes
+    @Transactional
+    public void toggleLike(Long postId, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        Optional<Like> existingLike = likeRepository.findByUserAndPost(user, post);
+        if (existingLike.isPresent()) {
+            likeRepository.delete(existingLike.get());  // unlike
         } else {
-            post.setLikes(post.getLikes() - 1); // Decrement likes
+            likeRepository.save(new Like(user, post));  // like
         }
+    }
 
-        postRepository.save(post);
+    public boolean isLikedByUser(Long postId, Long userId) {
+        // koristi metodu koja traži po ID-jevima, da ne moraš praviti User/Post entitete izvan servisa
+        return likeRepository.existsByUserIdAndPostId(userId, postId);
+    }
+
+    public Map<String, Object> getLikeStatus(Long postId, Long userId) {
+        // uzmi broj lajkova i da li je user lajkovao
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        boolean liked = likeRepository.existsByUserIdAndPostId(userId, postId);
+        long likesCount = likeRepository.countByPost(post);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("liked", liked);
+        response.put("likesCount", likesCount);
+        return response;
     }
 
     public Map<String, Long> getPostQuantity() {
@@ -148,12 +174,8 @@ public class PostService {
             postDto.setAddress(post.getLocation());
             postDto.setUserId(post.getUser().getId());
             postDto.setCreationTime(post.getCreationTime());
-            postDto.setLikes(post.getLikes());
-            try{
-                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
-            } catch (IOException e) {
-                throw new IOException(e);
-            }
+            postDto.setLikes(post.getLikesCount());
+
 
             postDtos.add(postDto);
         }
@@ -171,12 +193,8 @@ public class PostService {
             postDto.setAddress(post.getLocation());
             postDto.setUserId(post.getUser().getId());
             postDto.setCreationTime(post.getCreationTime());
-            postDto.setLikes(post.getLikes());
-            try{
-                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
-            } catch (IOException e) {
-                throw new IOException(e);
-            }
+            postDto.setLikes(post.getLikesCount());
+
 
             postDtos.add(postDto);
         }
@@ -199,12 +217,8 @@ public class PostService {
             postDto.setAddress(post.getLocation());
             postDto.setUserId(post.getUser().getId());
             postDto.setCreationTime(post.getCreationTime());
-            postDto.setLikes(post.getLikes());
-            try {
-                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
-            } catch (IOException e) {
-                throw new IOException(e);
-            }
+            postDto.setLikes(post.getLikesCount());
+
             postDtos.add(postDto);
         }
         return postDtos;
@@ -236,12 +250,8 @@ public class PostService {
             postDto.setAddress(post.getLocation());
             postDto.setUserId(post.getUser().getId());
             postDto.setCreationTime(post.getCreationTime());
-            postDto.setLikes(post.getLikes());
-            try {
-                postDto.setImage(fileStorageService.getImage(post.getImagePaths()));
-            } catch (IOException e) {
-                throw new IOException(e);
-            }
+            postDto.setLikes(post.getLikesCount());
+
             postDtos.add(postDto);
         }
         return postDtos;
@@ -263,4 +273,19 @@ public class PostService {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c; // Distance in meters
     }
+
+    public Post findPostEntityById(Long id) {
+        return postRepository.findById(id).orElse(null);
+    }
+
+    public long getImageLastModified(Post post) {
+        Path imagePath = Paths.get(post.getImagePaths());
+        try {
+            return Files.getLastModifiedTime(imagePath).toMillis();
+        } catch (IOException e) {
+            return System.currentTimeMillis(); // fallback ako nema info
+        }
+    }
+
+
 }

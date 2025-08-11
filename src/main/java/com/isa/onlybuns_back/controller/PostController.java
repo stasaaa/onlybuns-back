@@ -1,36 +1,36 @@
 package com.isa.onlybuns_back.controller;
-
 import com.isa.onlybuns_back.dto.PostDto;
 import com.isa.onlybuns_back.image.FileStorageService;
 import com.isa.onlybuns_back.model.Address;
 import com.isa.onlybuns_back.model.Post;
 import com.isa.onlybuns_back.service.PostService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import com.isa.onlybuns_back.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
 
 @RestController
 @RequestMapping("posts")
 public class PostController {
 
-    private final FileStorageService fileStorageService;
     private final PostService postService;
+    private final FileStorageService fileStorageService;
     private final UserService userService;
 
-    public PostController(PostService postService, UserService userService, FileStorageService fileStorageService, UserService userService1) {
+    public PostController(PostService postService, UserService userService, FileStorageService fileStorageService) {
         this.postService = postService;
         this.fileStorageService = fileStorageService;
-        this.userService = userService1;
+        this.userService = userService;
     }
 
     @PostMapping("create")
@@ -44,7 +44,7 @@ public class PostController {
         byte[] imageBytes = imageFile.getBytes();
         PostDto postDto = new PostDto();
         postDto.setDescription(description);
-        postDto.setImage(imageBytes);
+
         postDto.setUserId(userId);
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -65,10 +65,17 @@ public class PostController {
     }
 
     @GetMapping("all")
-    public ResponseEntity<Collection<PostDto>> getAllPosts() throws IOException {
+    public ResponseEntity<Collection<PostDto>> getAllPosts(HttpServletRequest request) throws IOException {
         Collection<PostDto> ret = postService.findAll();
-        return ResponseEntity.ok(ret);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-Backend-Port", String.valueOf(request.getLocalPort())); // dodajemo port u header
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(ret);
     }
+
 
     @DeleteMapping("{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
@@ -88,10 +95,27 @@ public class PostController {
     }
 
     @PostMapping("/{postId}/toggle-like")
-    public ResponseEntity<Void> toggleLike(@PathVariable Long postId, @RequestBody Map<String, Boolean> request) {
-        boolean liked = request.getOrDefault("liked", false);
-        postService.toggleLike(postId, liked);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Map<String, Object>> toggleLike(
+            @PathVariable Long postId,
+            @RequestBody Map<String, Object> payload) {
+
+        Long userId = Long.valueOf(payload.get("userId").toString());
+
+        postService.toggleLike(postId, userId);
+
+
+        Map<String, Object> response = postService.getLikeStatus(postId, userId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{postId}/liked-by/{userId}")
+    public ResponseEntity<Boolean> isLikedByUser(
+            @PathVariable Long postId,
+            @PathVariable Long userId) {
+
+        boolean liked = postService.isLikedByUser(postId, userId);
+        return ResponseEntity.ok(liked);
     }
 
     @GetMapping("post-quantity")
@@ -125,4 +149,65 @@ public class PostController {
 
         return ResponseEntity.ok(postService.getPostsNear(userAddress, page, pageSize));
     }
+
+    @GetMapping("/{postId}/image")
+    public ResponseEntity<byte[]> getPostImage(
+            @PathVariable Long postId,
+            @RequestHeader(value = "If-None-Match", required = false) String ifNoneMatch,
+            @RequestHeader(value = "If-Modified-Since", required = false) String ifModifiedSince
+    ) throws IOException {
+
+        Post post = postService.findPostEntityById(postId);
+        if (post == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Učitaj sliku kao bajtove
+        byte[] imageBytes = fileStorageService.getImage(post.getImagePaths());
+
+        // Generiši ETag na osnovu sadržaja slike (hash)
+        String eTag = "\"" + Integer.toHexString(java.util.Arrays.hashCode(imageBytes)) + "\"";
+
+        // Uzmi vreme poslednje izmene fajla (ili iz baze ako imaš)
+        // Ovde pretpostavimo da imaš metod u postService koji vraća vreme poslednje izmene slike
+        long lastModifiedMillis = postService.getImageLastModified(post);
+        // Formatiraj vreme u HTTP format
+        java.time.format.DateTimeFormatter formatter =
+                java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME.withZone(java.time.ZoneId.of("GMT"));
+        String lastModified = formatter.format(java.time.Instant.ofEpochMilli(lastModifiedMillis));
+
+        // Provera ETag
+        if (ifNoneMatch != null && ifNoneMatch.equals(eTag)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                    .cacheControl(CacheControl.maxAge(86400, java.util.concurrent.TimeUnit.SECONDS).cachePublic())
+                    .eTag(eTag)
+                    .build();
+        }
+
+        // Provera Last-Modified
+        if (ifModifiedSince != null) {
+            try {
+                long ifModifiedSinceMillis = java.time.ZonedDateTime.parse(ifModifiedSince, formatter).toInstant().toEpochMilli();
+                if (ifModifiedSinceMillis >= lastModifiedMillis) {
+                    return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                            .cacheControl(CacheControl.maxAge(86400, java.util.concurrent.TimeUnit.SECONDS).cachePublic())
+                            .eTag(eTag)
+                            .lastModified(lastModifiedMillis)
+                            .build();
+                }
+            } catch (Exception e) {
+
+            }
+        }
+
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(86400, java.util.concurrent.TimeUnit.SECONDS).cachePublic())
+                .eTag(eTag)
+                .lastModified(lastModifiedMillis)
+                .contentType(org.springframework.http.MediaType.IMAGE_JPEG) // ili PNG po potrebi
+                .body(imageBytes);
+    }
+
+
 }

@@ -10,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
+
     // gets all comments for post sorted from the newest to oldest
     List<Comment> findByPostIdOrderByCreationTimeDesc(Long postId);
 
