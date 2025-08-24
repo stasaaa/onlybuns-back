@@ -1,5 +1,6 @@
 package com.isa.onlybuns_back.service;
 
+import com.google.common.hash.BloomFilter;
 import com.isa.onlybuns_back.dto.AuthenticationRequest;
 import com.isa.onlybuns_back.dto.UserDto;
 import com.isa.onlybuns_back.dto.AuthenticationResponse;
@@ -9,6 +10,7 @@ import com.isa.onlybuns_back.mapper.UserMapper;
 import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.model.UserRole;
 import com.isa.onlybuns_back.security.JWTService;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -30,11 +32,12 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JWTService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final BloomFilter<String> usernameBloomFilter;
 
     @Autowired
     public AuthenticationService(UserRepository userRepository, UserMapper userMapper, AddressMapper addressMapper,
                                  JavaMailSender mailSender, PasswordEncoder passwordEncoder,
-                                 JWTService jwtService, AuthenticationManager authenticationManager) {
+                                 JWTService jwtService, AuthenticationManager authenticationManager, BloomFilter<String> usernameBloomFilter) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.addressMapper = addressMapper;
@@ -42,6 +45,13 @@ public class AuthenticationService {
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.usernameBloomFilter = usernameBloomFilter;
+    }
+
+    @PostConstruct
+    public void populateBloomFilter() {
+        userRepository.findAll().forEach(user -> usernameBloomFilter.put(user.getUsername()));
+        System.out.println("Bloom Filter napunjen sa svim postojećim korisničkim imenima.");
     }
 
     public UserDto userDetails(String email) {
@@ -91,8 +101,10 @@ public class AuthenticationService {
             throw new IllegalArgumentException("Email address already in use.");
         }
 
-        if(userRepository.findByUsername(userDto.getUsername()) != null) {
-            throw new IllegalArgumentException("Username already in use.");
+        if (usernameBloomFilter.mightContain(userDto.getUsername())) {
+            if (userRepository.findByUsername(userDto.getUsername()) != null) {
+                throw new IllegalArgumentException("Username already in use.");
+            }
         }
 
         User user = new User();
@@ -116,6 +128,7 @@ public class AuthenticationService {
         user.setActivationToken(token);
 
         userRepository.save(user);
+        usernameBloomFilter.put(user.getUsername());
 
         sendActivationEmail(user.getEmail(), token);
 
