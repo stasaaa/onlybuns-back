@@ -9,6 +9,7 @@ import com.isa.onlybuns_back.mapper.UserMapper;
 import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.model.UserRole;
 import com.isa.onlybuns_back.security.JWTService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -80,6 +81,7 @@ public class AuthenticationService {
                 .build();
     }
 
+    @Transactional
     public boolean register(UserDto userDto) {
         if (!userDto.getPassword().equals(userDto.getPasswordConfirm())) {
             throw new IllegalArgumentException("Passwords do not match.");
