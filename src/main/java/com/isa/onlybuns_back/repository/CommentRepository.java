@@ -19,4 +19,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     long countRecentCommentsByUser(Long userId, Date oneHourAgo);
 
     List<Comment> findByCreationTimeAfter(Date date);
+
+    List<Comment> findByUserIdOrderByCreationTimeDesc(Long userId);
 }

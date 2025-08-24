@@ -2,11 +2,11 @@ package com.isa.onlybuns_back.service;
 
 import com.google.common.hash.BloomFilter;
 import com.isa.onlybuns_back.dto.AuthenticationRequest;
+import com.isa.onlybuns_back.dto.UpdatePasswordDto;
 import com.isa.onlybuns_back.dto.UserDto;
 import com.isa.onlybuns_back.dto.AuthenticationResponse;
-import com.isa.onlybuns_back.mapper.AddressMapper;
-import com.isa.onlybuns_back.repository.UserRepository;
 import com.isa.onlybuns_back.mapper.UserMapper;
+import com.isa.onlybuns_back.repository.UserRepository;
 import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.model.UserRole;
 import com.isa.onlybuns_back.security.JWTService;
@@ -27,7 +27,6 @@ import java.util.*;
 public class AuthenticationService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final AddressMapper addressMapper;
     private final JavaMailSender mailSender;
     private final PasswordEncoder passwordEncoder;
     private final JWTService jwtService;
@@ -35,12 +34,11 @@ public class AuthenticationService {
     private final BloomFilter<String> usernameBloomFilter;
 
     @Autowired
-    public AuthenticationService(UserRepository userRepository, UserMapper userMapper, AddressMapper addressMapper,
+    public AuthenticationService(UserRepository userRepository, UserMapper userMapper,
                                  JavaMailSender mailSender, PasswordEncoder passwordEncoder,
                                  JWTService jwtService, AuthenticationManager authenticationManager, BloomFilter<String> usernameBloomFilter) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
-        this.addressMapper = addressMapper;
         this.mailSender = mailSender;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -107,19 +105,7 @@ public class AuthenticationService {
             }
         }
 
-        User user = new User();
-//        TODO: promeniti u mapper
-        user.setUsername(userDto.getUsername());
-        user.setEmail(userDto.getEmail());
-        user.setFirstName(userDto.getFirstName());
-        user.setLastName(userDto.getLastName());
-        user.getAddress().setCountry(userDto.getAddress().getCountry());
-        user.getAddress().setCity(userDto.getAddress().getCity());
-        user.getAddress().setPostalCode(userDto.getAddress().getPostalCode());
-        user.getAddress().setStreet(userDto.getAddress().getStreet());
-        user.getAddress().setNumber(userDto.getAddress().getNumber());
-        user.getAddress().setLatitude(userDto.getAddress().getLatitude());
-        user.getAddress().setLongitude(userDto.getAddress().getLongitude());
+        User user = UserMapper.toEntity(userDto);
         user.setActive(false);
         user.setUserRole(UserRole.REGISTERED);
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
@@ -163,16 +149,28 @@ public class AuthenticationService {
 
     public Collection<UserDto> getAll() {
         List<User> users = userRepository.findAll();
-        return userMapper.usersToUserDTOs(users);
+        return users.stream().map(UserMapper::toDto).toList();
     }
 
 
-    public UserDto updatePassword(UserDto userDto) {
-        User user = userRepository.findById(userDto.getId()).orElse(null);
-        if (user != null) {
-            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-            userRepository.save(user);
+    public UserDto updatePassword(UpdatePasswordDto updatePasswordInfo) {
+        User user = checkUserExists(updatePasswordInfo.getUserId());
+
+        if (!passwordEncoder.matches(updatePasswordInfo.getOldPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Old password is not correct");
         }
-        return userDto;
+
+        if (!updatePasswordInfo.getConfirmNewPassword().equals(updatePasswordInfo.getNewPassword())) {
+            throw new IllegalArgumentException("Passwords do not match.");
+        }
+
+        user.setPassword(passwordEncoder.encode(updatePasswordInfo.getNewPassword()));
+        userRepository.save(user);
+        return UserMapper.toDto(user);
+    }
+
+    private User checkUserExists(long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found."));
     }
 }

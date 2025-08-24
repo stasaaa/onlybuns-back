@@ -94,4 +94,10 @@ public class CommentService {
 
         commentRepository.delete(comment);
     }
+
+    public List<CommentDto> getCommentsForUser(Long userId) {
+        return commentRepository.findByUserIdOrderByCreationTimeDesc(userId)
+                .stream().map(this::toDto)
+                .toList();
+    }
 }

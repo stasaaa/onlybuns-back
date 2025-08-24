@@ -51,4 +51,9 @@ public class CommentController {
 
         return ResponseEntity.ok(createdComment);
     }
+
+    @GetMapping("")
+    public ResponseEntity<List<CommentDto>> getForUser(@RequestParam Long userId) {
+        return ResponseEntity.ok(commentService.getCommentsForUser(userId));
+    }
 }

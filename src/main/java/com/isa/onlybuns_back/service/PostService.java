@@ -2,6 +2,7 @@ package com.isa.onlybuns_back.service;
 
 import com.isa.onlybuns_back.dto.PostDto;
 import com.isa.onlybuns_back.image.FileStorageService;
+import com.isa.onlybuns_back.mapper.PostMapper;
 import com.isa.onlybuns_back.model.Like;
 import com.isa.onlybuns_back.model.Address;
 import com.isa.onlybuns_back.model.Post;
@@ -88,8 +89,22 @@ public class PostService {
         return Optional.of(postDto);
     }
 
-    public List<Post> getByUserId(Long userId) {
-        return postRepository.findByUserId(userId);
+    public List<PostDto> getByUserId(Long userId, Long loggedInUserId) {
+        if (loggedInUserId == null) {
+            return postRepository.findByUserId(userId)
+                    .stream()
+                    .map(PostMapper::toDto)
+                    .sorted((p1, p2) -> p2.getCreationTime().compareTo(p1.getCreationTime()))
+                    .toList();
+        }
+        return postRepository.findByUserId(userId)
+                .stream()
+                .map(p -> {
+                    boolean isLiked = isLikedByUser(p.getId(), loggedInUserId);
+                    return PostMapper.toDto(p, isLiked);
+                })
+                .sorted((p1, p2) -> p2.getCreationTime().compareTo(p1.getCreationTime()))
+                .toList();
     }
 
     public Collection<PostDto> findAll() throws IOException {

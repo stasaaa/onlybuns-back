@@ -90,8 +90,11 @@ public class PostController {
     }
 
     @GetMapping("user/{userId}")
-    public ResponseEntity<List<Post>> getByUserId(@PathVariable long userId) {
-        return ResponseEntity.ok(postService.getByUserId(userId));
+    public ResponseEntity<List<PostDto>> getByUserId(
+            @PathVariable long userId,
+            @RequestParam(required = false) Long loggedInUser
+    ) {
+        return ResponseEntity.ok(postService.getByUserId(userId, loggedInUser));
     }
 
     @PostMapping("/{postId}/toggle-like")

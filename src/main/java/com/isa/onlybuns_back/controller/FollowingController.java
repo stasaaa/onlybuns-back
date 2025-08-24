@@ -30,15 +30,15 @@ public class FollowingController {
     }
 
     // Lista korisnika koje ja pratim
-    @GetMapping("/followed")
-    public List<User> getFollowed(Principal principal) {
-        return followingService.getFollowedUsers(principal.getName());
+    @GetMapping("/{username}/followed")
+    public List<User> getFollowed(@PathVariable String username) {
+        return followingService.getFollowedUsers(username);
     }
 
     // Lista mojih pratilaca
-    @GetMapping("/followers")
-    public List<User> getFollowers(Principal principal) {
-        return followingService.getFollowers(principal.getName());
+    @GetMapping("/{username}/followers")
+    public List<User> getFollowers(@PathVariable String username) {
+        return followingService.getFollowers(username);
     }
 
     // Broj pratilaca (kao JSON)

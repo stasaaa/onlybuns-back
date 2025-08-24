@@ -6,14 +6,15 @@ import com.isa.onlybuns_back.model.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 @Getter
 @Setter
 @Accessors(chain = true)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserDto {
     private long id;
 
@@ -115,7 +116,4 @@ public class UserDto {
         this.lastName = user.getLastName();
         this.numberOfPosts = user.getPosts().size();
     }
-
-    public UserDto() {}
-
 }

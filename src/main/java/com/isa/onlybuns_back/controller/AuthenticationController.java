@@ -2,6 +2,7 @@ package com.isa.onlybuns_back.controller;
 
 import com.isa.onlybuns_back.dto.AuthenticationRequest;
 import com.isa.onlybuns_back.dto.AuthenticationResponse;
+import com.isa.onlybuns_back.dto.UpdatePasswordDto;
 import com.isa.onlybuns_back.dto.UserDto;
 import com.isa.onlybuns_back.security.LoginAttemptService;
 import com.isa.onlybuns_back.service.AuthenticationService;
@@ -65,8 +66,8 @@ public class AuthenticationController {
     }
 
     @PutMapping("update-password")
-    public ResponseEntity<UserDto> updatePassword(@RequestBody UserDto userDto) {
-        return ResponseEntity.ok(authentificationService.updatePassword(userDto));
+    public ResponseEntity<UserDto> updatePassword(@Valid @RequestBody UpdatePasswordDto updatePasswordInfo) {
+        return ResponseEntity.ok(authentificationService.updatePassword(updatePasswordInfo));
     }
 
     @GetMapping("userDetails")

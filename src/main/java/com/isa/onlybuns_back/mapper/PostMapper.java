@@ -40,4 +40,30 @@ public class PostMapper {
 
         return dto;
     }
+
+    public static PostDto toDto(Post post, boolean liked) {
+        return PostDto.builder()
+                .id(post.getId())
+                .description(post.getDescription())
+                .userId(post.getUser().getId())
+                .username(post.getUser().getUsername())
+                .address(post.getLocation())
+                .creationTime(post.getCreationTime())
+                .likes(post.getLikesCount())
+                .likedByCurrentUser(liked)
+                .build();
+    }
+
+    public static PostDto toDto(Post post) {
+        return PostDto.builder()
+                .id(post.getId())
+                .description(post.getDescription())
+                .userId(post.getUser().getId())
+                .username(post.getUser().getUsername())
+                .address(post.getLocation())
+                .creationTime(post.getCreationTime())
+                .likes(post.getLikesCount())
+                .likedByCurrentUser(false)
+                .build();
+    }
 }

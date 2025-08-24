@@ -1,8 +1,10 @@
 package com.isa.onlybuns_back.controller;
 
+import com.isa.onlybuns_back.dto.UpdateUserProfileDto;
 import com.isa.onlybuns_back.dto.UserDto;
 import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -89,6 +91,11 @@ public class UserController {
             System.err.println("Error getting all users: " + e.getMessage());
             return ResponseEntity.ok(List.of());
         }
+    }
+
+    @PostMapping("")
+    public ResponseEntity<UserDto> updateProfile(@Valid @RequestBody UpdateUserProfileDto updateProfileInfo) {
+        return ResponseEntity.ok(userService.updateUser(updateProfileInfo));
     }
 }
 

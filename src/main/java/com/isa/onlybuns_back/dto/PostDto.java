@@ -1,10 +1,7 @@
 package com.isa.onlybuns_back.dto;
 
 import com.isa.onlybuns_back.model.Address;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
 import java.util.Date;
 import java.util.List;
@@ -13,6 +10,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class PostDto {
     private long id;
     private String description;
