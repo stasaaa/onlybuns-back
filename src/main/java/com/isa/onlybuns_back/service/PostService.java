@@ -12,6 +12,8 @@ import com.isa.onlybuns_back.repository.PostRepository;
 import com.isa.onlybuns_back.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -173,6 +175,7 @@ public class PostService {
         return result;
     }
 
+    @Cacheable(value = "topPostsLast7Days", key = "'top-5-week'")
     public Collection<PostDto> getFiveMostLikedLastWeek() throws IOException {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_YEAR, -7);  // Datum od pre 7 dana
@@ -197,6 +200,7 @@ public class PostService {
         return postDtos;
     }
 
+    @Cacheable(value = "topPostsAllTime", key = "'top-10'")
     public Collection<PostDto> getTopTenMostLikedPosts() throws IOException {
         Pageable topTen = (Pageable) PageRequest.of(0, 10);  // Podesi broj na 10
         List<Post> posts = postRepository.getTopTenMostLikedPosts(topTen);

@@ -1,6 +1,8 @@
 package com.isa.onlybuns_back.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import java.util.Date;
 import java.util.List;
 
