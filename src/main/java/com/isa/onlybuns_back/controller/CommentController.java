@@ -4,6 +4,7 @@ import com.isa.onlybuns_back.dto.CommentDto;
 import com.isa.onlybuns_back.repository.CommentRepository;
 import com.isa.onlybuns_back.service.CommentRateLimitService;
 import com.isa.onlybuns_back.service.CommentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class CommentController {
     }
 
     @PostMapping("/new")
-    public ResponseEntity<?> createComment(@RequestBody CommentDto commentDto) {
+    public ResponseEntity<?> createComment(@Valid @RequestBody CommentDto commentDto) {
         Long userId = commentDto.getUserId();
 
         // provera rate limita
