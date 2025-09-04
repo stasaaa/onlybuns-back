@@ -1,6 +1,7 @@
 package com.isa.onlybuns_back.repository;
 
 import com.isa.onlybuns_back.model.Post;
+import com.isa.onlybuns_back.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -52,4 +53,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.user.username = :username")
     Page<Post> findByUsernamePaged(@Param("username") String username, Pageable pageable);
+
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.user IN :authors AND p.creationTime >= :since")
+    long countPostsByAuthorsSince(@Param("authors") List<User> authors, @Param("since") Date since);
+
 }

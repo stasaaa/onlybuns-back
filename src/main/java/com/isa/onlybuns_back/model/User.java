@@ -54,6 +54,9 @@ public class User implements UserDetails {
     @Column(name = "last_login")
     private Date lastLogin;
 
+    @Column(name = "last_summary_sent_at")
+    private Date lastSummarySentAt;
+
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
