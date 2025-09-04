@@ -33,6 +33,9 @@ public class PostService {
     private final LikeRepository likeRepository;
 
     @Autowired
+    private LocationService locationService;
+
+    @Autowired
     public PostService(PostRepository postRepository,
                        UserRepository userRepository,
                        FileStorageService fileStorageService,
@@ -59,7 +62,10 @@ public class PostService {
             post.setUser(user);
             post.setDescription(postDto.getDescription());
             post.setImagePaths(imagePath);
-            post.setLocation(postDto.getAddress());
+            //post.setLocation(postDto.getAddress());
+            System.out.println("DEBUG: Pozivam locationService.cachePostLocation()");
+            Address cachedLocation = locationService.cachePostLocation(postDto.getAddress());
+            post.setLocation(cachedLocation);
             post.setCreationTime(new Date());
             post.setComments(new ArrayList<>());
 
