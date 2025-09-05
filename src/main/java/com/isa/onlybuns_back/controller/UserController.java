@@ -2,26 +2,31 @@ package com.isa.onlybuns_back.controller;
 
 import com.isa.onlybuns_back.dto.UserDto;
 import com.isa.onlybuns_back.model.User;
+import com.isa.onlybuns_back.service.FollowingService;
 import com.isa.onlybuns_back.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "users")
 public class UserController {
     private final UserService userService;
+    private final FollowingService followingService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, FollowingService followingService) {
         this.userService = userService;
+        this.followingService = followingService;
     }
 
     @GetMapping("{id}")
@@ -90,5 +95,21 @@ public class UserController {
             return ResponseEntity.ok(List.of());
         }
     }
+    @GetMapping("/me/followed-ids")
+    public ResponseEntity<List<Long>> getFollowedUserIds(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String username = principal.getName();
+
+        List<Long> followedIds = followingService.getFollowedUsers(username)
+                .stream()
+                .map(User::getId)
+                .toList();
+
+        return ResponseEntity.ok(followedIds);
+    }
+
 }
 
