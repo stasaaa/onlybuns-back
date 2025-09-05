@@ -138,7 +138,7 @@ public class PostService {
     public void toggleLike(Long postId, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findByIdForUpdate(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
         Optional<Like> existingLike = likeRepository.findByUserAndPost(user, post);
@@ -146,6 +146,14 @@ public class PostService {
             likeRepository.delete(existingLike.get());  // unlike
         } else {
             likeRepository.save(new Like(user, post));  // like
+        }
+        // simulacija za konkurentno testiranje
+        if ("test".equals(System.getProperty("spring.profiles.active"))) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
