@@ -88,7 +88,9 @@ public class SecurityConfig {
                                 "/ws/**",
                                 "queue/**",
                                 "/posts/*/image",
-                                "/hello"
+                                "/hello",
+                                "/actuator",
+                                "/actuator/**"
 
                         ).permitAll()
                         .anyRequest()
