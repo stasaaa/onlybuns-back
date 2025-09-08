@@ -88,7 +88,10 @@ public class SecurityConfig {
                                 "/ws/**",
                                 "queue/**",
                                 "/posts/*/image",
-                                "/hello"
+                                "/hello",
+                                "/actuator",
+                                "/actuator/**",
+                                "/comments/rate-limit-status/**"
 
                         ).permitAll()
                         .anyRequest()

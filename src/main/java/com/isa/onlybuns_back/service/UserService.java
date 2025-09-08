@@ -111,8 +111,8 @@ public class UserService {
         }
     }
 
-
-
-
+    public User getEntityByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
 
 }
