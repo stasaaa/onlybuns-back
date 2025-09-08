@@ -23,6 +23,9 @@ public class CommentRateLimitService {
     // userId -> lista timestampova komentara
     private final ConcurrentHashMap<Long, List<LocalDateTime>> userCommentTimes = new ConcurrentHashMap<>();
 
+    // poslednje cleanup vreme po korisniku
+    private final ConcurrentHashMap<Long, LocalDateTime> lastCleanupTime = new ConcurrentHashMap<>();
+
     // ucitavanje komentara iz baze (okine u trenutku kada se servis kreira)
     @PostConstruct
     public void loadRecentComments() {
@@ -50,27 +53,48 @@ public class CommentRateLimitService {
         }
     }
 
-    public boolean canUserComment(Long userId) {
+    private synchronized void cleanupIfNeeded(Long userId) {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneHourAgo = now.minusHours(1);
+        LocalDateTime lastCleanup = lastCleanupTime.get(userId);
 
-        // dobijanje liste komentara za korisnika
+        // cisti samo ako je prošlo više od 30 sekundi od poslednjeg cleanup-a
+        if (lastCleanup == null || lastCleanup.isBefore(now.minusSeconds(30))) {
+            LocalDateTime oneHourAgo = now.minusHours(1);
+            List<LocalDateTime> commentTimes = userCommentTimes.get(userId);
+
+            if (commentTimes != null) {
+                int sizeBefore = commentTimes.size();
+                commentTimes.removeIf(time -> time.isBefore(oneHourAgo));
+                int sizeAfter = commentTimes.size();
+
+                if (commentTimes.isEmpty()) {
+                    userCommentTimes.remove(userId);
+                    lastCleanupTime.remove(userId);
+                } else {
+                    lastCleanupTime.put(userId, now);
+                }
+
+                if (sizeBefore != sizeAfter) {
+                    System.out.println("CLEANUP: User " + userId + " cleaned " + (sizeBefore - sizeAfter) + " old comments");
+                }
+            }
+        }
+    }
+
+    public boolean canUserComment(Long userId) {
+        cleanupIfNeeded(userId); // samo pozovi cleanup
+
         List<LocalDateTime> commentTimes = userCommentTimes.computeIfAbsent(userId, k -> new ArrayList<>());
-        System.out.println("=== COMMENT RATE LIMITER ===");
-        System.out.println("User " + userId + " comments before cleanup: " + commentTimes.size());
-
-        // uklanjanje komentara starije od sat vremena
-        commentTimes.removeIf(time -> time.isBefore(oneHourAgo));
-
-        // provera da li korisnik moze da komentarise
         boolean canComment = commentTimes.size() < MAX_COMMENTS_PER_HOUR;
-        System.out.println("User " + userId + " comments after cleanup: " + commentTimes.size() + "/" + MAX_COMMENTS_PER_HOUR);
+
+        System.out.println("=== COMMENT RATE LIMITER ===");
+        System.out.println("User " + userId + " comments: " + commentTimes.size() + "/" + MAX_COMMENTS_PER_HOUR);
         System.out.println("Comment limiter allows: " + canComment);
 
         return canComment;
     }
 
-    public void recordComment(Long userId) {
+    public synchronized void recordComment(Long userId) {
         LocalDateTime now = LocalDateTime.now();
         List<LocalDateTime> commentTimes = userCommentTimes.computeIfAbsent(userId, k -> new ArrayList<>());
         commentTimes.add(now);
@@ -78,12 +102,7 @@ public class CommentRateLimitService {
     }
 
     public int getRemainingComments(Long userId) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneHourAgo = now.minusHours(1);
-
         List<LocalDateTime> commentTimes = userCommentTimes.computeIfAbsent(userId, k -> new ArrayList<>());
-        commentTimes.removeIf(time -> time.isBefore(oneHourAgo));
-
         return MAX_COMMENTS_PER_HOUR - commentTimes.size();
     }
 }
