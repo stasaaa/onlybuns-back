@@ -11,14 +11,17 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Pageable;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
-    public UserService(UserRepository userRepository) {
+    private final UserMapper userMapper;
+    public UserService(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     public UserDto findById(Long id) {
@@ -106,5 +109,8 @@ public class UserService {
     }
 
 
+    public User getEntityByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
 
 }

@@ -36,6 +36,9 @@ public class PostService {
     private final LikeRepository likeRepository;
 
     @Autowired
+    private LocationService locationService;
+
+    @Autowired
     public PostService(PostRepository postRepository,
                        UserRepository userRepository,
                        FileStorageService fileStorageService,
@@ -47,13 +50,25 @@ public class PostService {
     }
 
     public PostDto create(PostDto postDto, String imagePath) throws IOException {
+        // validacija za duzinu opisa
+        String desc = postDto.getDescription();
+        if (desc == null || desc.trim().isEmpty()) {
+            throw new RuntimeException("Description cannot be empty.");
+        }
+        if (desc.length() > 250) {
+            throw new RuntimeException("Description cannot exceed 250 characters.");
+        }
+
         Post post = new Post();
         User user = userRepository.findById(postDto.getUserId()).orElse(null);
         if (user != null) {
             post.setUser(user);
             post.setDescription(postDto.getDescription());
             post.setImagePaths(imagePath);
-            post.setLocation(postDto.getAddress());
+            //post.setLocation(postDto.getAddress());
+            System.out.println("DEBUG: Pozivam locationService.cachePostLocation()");
+            Address cachedLocation = locationService.cachePostLocation(postDto.getAddress());
+            post.setLocation(cachedLocation);
             post.setCreationTime(new Date());
             post.setComments(new ArrayList<>());
 
@@ -85,6 +100,15 @@ public class PostService {
     public Optional<PostDto> update(long id, PostDto postDto) {
         Post post = postRepository.findById(id).orElse(null);
         if (post == null) return Optional.empty();
+
+        // validacija za duzinu opisa
+        String desc = postDto.getDescription();
+        if (desc == null || desc.trim().isEmpty()) {
+            throw new RuntimeException("Description cannot be empty.");
+        }
+        if (desc.length() > 250) {
+            throw new RuntimeException("Description cannot exceed 250 characters.");
+        }
 
         post.setDescription(postDto.getDescription());
         postRepository.save(post);
@@ -131,7 +155,7 @@ public class PostService {
     public void toggleLike(Long postId, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findByIdForUpdate(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
         Optional<Like> existingLike = likeRepository.findByUserAndPost(user, post);
@@ -139,6 +163,14 @@ public class PostService {
             likeRepository.delete(existingLike.get());  // unlike
         } else {
             likeRepository.save(new Like(user, post));  // like
+        }
+        // simulacija za konkurentno testiranje
+        if ("test".equals(System.getProperty("spring.profiles.active"))) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
