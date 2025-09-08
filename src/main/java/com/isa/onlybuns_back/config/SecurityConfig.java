@@ -90,7 +90,8 @@ public class SecurityConfig {
                                 "/posts/*/image",
                                 "/hello",
                                 "/actuator",
-                                "/actuator/**"
+                                "/actuator/**",
+                                "/comments/rate-limit-status/**"
 
                         ).permitAll()
                         .anyRequest()
