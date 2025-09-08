@@ -1,8 +1,8 @@
 package com.isa.onlybuns_back.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.Accessors;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -18,6 +18,10 @@ import java.util.*;
                 @UniqueConstraint(name = "username_unique", columnNames = "username")
         }
 )
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Accessors(chain = true)
 public class User implements UserDetails {
     @Id
     @SequenceGenerator(
@@ -54,9 +58,6 @@ public class User implements UserDetails {
     @Column(name = "last_login")
     private Date lastLogin;
 
-    @Column(name = "last_summary_sent_at")
-    private Date lastSummarySentAt;
-
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
@@ -71,9 +72,6 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
-
-
-    public User() {}
 
     public User(String email, String username, String password, String firstName, String lastName,
                 UserRole userRole, Date lastLogin, boolean isActive, String activationToken, Address address) {

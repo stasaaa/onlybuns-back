@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Date;
 
 @Repository
 public interface FollowingRepository extends JpaRepository<Following, Long> {
@@ -21,7 +20,5 @@ public interface FollowingRepository extends JpaRepository<Following, Long> {
 
     long countByFollowed(User followed);
     long countByFollower(User user);
-
-    long countByFollowedAndFollowedAtAfter(User followed, Date since);
 }
 

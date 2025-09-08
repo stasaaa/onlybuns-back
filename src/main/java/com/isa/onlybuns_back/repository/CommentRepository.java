@@ -1,10 +1,8 @@
 package com.isa.onlybuns_back.repository;
 
 import com.isa.onlybuns_back.model.Comment;
-import com.isa.onlybuns_back.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
@@ -22,6 +20,5 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     List<Comment> findByCreationTimeAfter(Date date);
 
-    @Query("SELECT COUNT(c) FROM Comment c WHERE c.post.user = :user AND c.creationTime >= :since")
-    long countCommentsOnUsersPostsSince(@Param("user") User user, @Param("since") Date since);
+    List<Comment> findByUserIdOrderByCreationTimeDesc(Long userId);
 }

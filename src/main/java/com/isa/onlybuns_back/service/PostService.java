@@ -2,6 +2,7 @@ package com.isa.onlybuns_back.service;
 
 import com.isa.onlybuns_back.dto.PostDto;
 import com.isa.onlybuns_back.image.FileStorageService;
+import com.isa.onlybuns_back.mapper.PostMapper;
 import com.isa.onlybuns_back.model.Like;
 import com.isa.onlybuns_back.model.Address;
 import com.isa.onlybuns_back.model.Post;
@@ -11,6 +12,8 @@ import com.isa.onlybuns_back.repository.PostRepository;
 import com.isa.onlybuns_back.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -33,9 +36,6 @@ public class PostService {
     private final LikeRepository likeRepository;
 
     @Autowired
-    private LocationService locationService;
-
-    @Autowired
     public PostService(PostRepository postRepository,
                        UserRepository userRepository,
                        FileStorageService fileStorageService,
@@ -47,25 +47,13 @@ public class PostService {
     }
 
     public PostDto create(PostDto postDto, String imagePath) throws IOException {
-        // validacija za duzinu opisa
-        String desc = postDto.getDescription();
-        if (desc == null || desc.trim().isEmpty()) {
-            throw new RuntimeException("Description cannot be empty.");
-        }
-        if (desc.length() > 250) {
-            throw new RuntimeException("Description cannot exceed 250 characters.");
-        }
-
         Post post = new Post();
         User user = userRepository.findById(postDto.getUserId()).orElse(null);
         if (user != null) {
             post.setUser(user);
             post.setDescription(postDto.getDescription());
             post.setImagePaths(imagePath);
-            //post.setLocation(postDto.getAddress());
-            System.out.println("DEBUG: Pozivam locationService.cachePostLocation()");
-            Address cachedLocation = locationService.cachePostLocation(postDto.getAddress());
-            post.setLocation(cachedLocation);
+            post.setLocation(postDto.getAddress());
             post.setCreationTime(new Date());
             post.setComments(new ArrayList<>());
 
@@ -98,22 +86,27 @@ public class PostService {
         Post post = postRepository.findById(id).orElse(null);
         if (post == null) return Optional.empty();
 
-        // validacija za duzinu opisa
-        String desc = postDto.getDescription();
-        if (desc == null || desc.trim().isEmpty()) {
-            throw new RuntimeException("Description cannot be empty.");
-        }
-        if (desc.length() > 250) {
-            throw new RuntimeException("Description cannot exceed 250 characters.");
-        }
-
         post.setDescription(postDto.getDescription());
         postRepository.save(post);
         return Optional.of(postDto);
     }
 
-    public List<Post> getByUserId(Long userId) {
-        return postRepository.findByUserId(userId);
+    public List<PostDto> getByUserId(Long userId, Long loggedInUserId) {
+        if (loggedInUserId == null) {
+            return postRepository.findByUserId(userId)
+                    .stream()
+                    .map(PostMapper::toDto)
+                    .sorted((p1, p2) -> p2.getCreationTime().compareTo(p1.getCreationTime()))
+                    .toList();
+        }
+        return postRepository.findByUserId(userId)
+                .stream()
+                .map(p -> {
+                    boolean isLiked = isLikedByUser(p.getId(), loggedInUserId);
+                    return PostMapper.toDto(p, isLiked);
+                })
+                .sorted((p1, p2) -> p2.getCreationTime().compareTo(p1.getCreationTime()))
+                .toList();
     }
 
     public Collection<PostDto> findAll() throws IOException {
@@ -138,7 +131,7 @@ public class PostService {
     public void toggleLike(Long postId, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        Post post = postRepository.findByIdForUpdate(postId)
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
         Optional<Like> existingLike = likeRepository.findByUserAndPost(user, post);
@@ -146,14 +139,6 @@ public class PostService {
             likeRepository.delete(existingLike.get());  // unlike
         } else {
             likeRepository.save(new Like(user, post));  // like
-        }
-        // simulacija za konkurentno testiranje
-        if ("test".equals(System.getProperty("spring.profiles.active"))) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
         }
     }
 
@@ -190,6 +175,7 @@ public class PostService {
         return result;
     }
 
+    @Cacheable(value = "topPostsLast7Days", key = "'top-5-week'")
     public Collection<PostDto> getFiveMostLikedLastWeek() throws IOException {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DAY_OF_YEAR, -7);  // Datum od pre 7 dana
@@ -214,6 +200,7 @@ public class PostService {
         return postDtos;
     }
 
+    @Cacheable(value = "topPostsAllTime", key = "'top-10'")
     public Collection<PostDto> getTopTenMostLikedPosts() throws IOException {
         Pageable topTen = (Pageable) PageRequest.of(0, 10);  // Podesi broj na 10
         List<Post> posts = postRepository.getTopTenMostLikedPosts(topTen);

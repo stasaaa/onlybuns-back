@@ -1,6 +1,5 @@
 package com.isa.onlybuns_back.security;
 
-import com.isa.onlybuns_back.service.ActiveUserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +23,6 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
     private final JWTService jwtService;
     private final UserDetailsService userDetailsService;
-    private final ActiveUserService activeUserService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -44,9 +42,6 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
             if (jwtService.isTokenValid(jwt, userDetails)) {
-                // oznacava korisnika kao aktivnog
-                activeUserService.markUserActive(userEmail);
-
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
                         null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

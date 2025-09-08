@@ -62,11 +62,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.id <> :currentUserId")
     List<User> findAllExceptCurrent(@Param("currentUserId") Long currentUserId);
 
-    @Query("SELECT u FROM User u " +
-            "WHERE u.lastLogin < :inactiveBefore " +
-            "AND (u.lastSummarySentAt IS NULL OR u.lastSummarySentAt < :notifyBefore)")
-    List<User> findInactiveUsersForSummary(@Param("inactiveBefore") Date inactiveBefore,
-                                           @Param("notifyBefore") Date notifyBefore);
 
 
 }

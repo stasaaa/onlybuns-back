@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Date;
 
 public interface LikeRepository extends JpaRepository<Like, Long> {
 
@@ -20,8 +19,5 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     @Query("SELECT l.post FROM Like l WHERE l.user = :user")
     List<Post> findPostsLikedByUser(@Param("user") User user);
     boolean existsByUserIdAndPostId(Long userId, Long postId);
-
-    @Query("SELECT COUNT(l) FROM Like l WHERE l.likedAt >= :since AND l.post.user = :user")
-    long countLikesOnUsersPostsSince(@Param("user") User user, @Param("since") Date since);
 
 }
