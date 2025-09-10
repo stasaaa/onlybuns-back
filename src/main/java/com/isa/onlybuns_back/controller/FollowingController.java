@@ -1,5 +1,6 @@
 package com.isa.onlybuns_back.controller;
 
+import com.isa.onlybuns_back.dto.UserDto;
 import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.service.FollowingService;
 import lombok.RequiredArgsConstructor;
@@ -31,13 +32,13 @@ public class FollowingController {
 
     // Lista korisnika koje ja pratim
     @GetMapping("/{username}/followed")
-    public List<User> getFollowed(@PathVariable String username) {
+    public List<UserDto> getFollowed(@PathVariable String username) {
         return followingService.getFollowedUsers(username);
     }
 
     // Lista mojih pratilaca
     @GetMapping("/{username}/followers")
-    public List<User> getFollowers(@PathVariable String username) {
+    public List<UserDto> getFollowers(@PathVariable String username) {
         return followingService.getFollowers(username);
     }
 

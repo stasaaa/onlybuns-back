@@ -33,8 +33,7 @@ public class RabbitLocationConsumerService {
 
     private void pollForLocations() {
         try {
-            // POZIV NA BROKER DA SE PRIME PORUKE
-            ResponseEntity<RabbitLocationMessage> response = restTemplate.getForEntity("http://localhost:8081/queue/receive/rabbit-care-queue", RabbitLocationMessage.class);
+            ResponseEntity<RabbitLocationMessage> response = restTemplate.getForEntity("http://localhost:8083/queue/receive/rabbit-care-queue", RabbitLocationMessage.class);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 RabbitLocationMessage locationDto = response.getBody();
