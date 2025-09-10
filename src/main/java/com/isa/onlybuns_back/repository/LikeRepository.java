@@ -28,4 +28,10 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
         GROUP BY l.user.id 
         ORDER BY COUNT(l) DESC
     """)
-    List<Long> findTopUserIdsByLikesSince(@Param("oneWeekAgo") Date oneWeekAgo);}
+    List<Long> findTopUserIdsByLikesSince(@Param("oneWeekAgo") Date oneWeekAgo);
+
+    @Query("SELECT COUNT(l) FROM Like l WHERE l.likedAt >= :since AND l.post.user = :user")
+    long countLikesOnUsersPostsSince(@Param("user") User user, @Param("since") Date since);
+
+}
+

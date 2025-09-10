@@ -1,7 +1,7 @@
 package com.isa.onlybuns_back.controller;
 
 import com.isa.onlybuns_back.model.Post;
-import com.isa.onlybuns_back.repository.PostRepository; // Pretpostavka da postoji repozitorijum za objave
+import com.isa.onlybuns_back.repository.PostRepository;
 import com.isa.onlybuns_back.service.AdService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +32,6 @@ public class AdController {
         }
 
         adService.sendAdMessage(post);
-        return ResponseEntity.ok("Objava #" + postId + " odobrena za reklamiranje.");
+        return ResponseEntity.ok("Post suggested for advertising!");
     }
 }
