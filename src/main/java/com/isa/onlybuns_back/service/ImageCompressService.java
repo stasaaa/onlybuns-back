@@ -30,17 +30,18 @@ public class ImageCompressService {
 
     //scheduled to run every day at midnight
     @Scheduled(cron = "0 0 0 * * ?")
-    //@Scheduled(cron = "0 */2 * * * ?")
+    //@Scheduled(cron = "0 */1 * * * ?")
     public void compressDailyImages() throws IOException {
         logger.info("Image compressing started...");
-        LocalDate oneMonthAgo = LocalDate.now().minus(1, ChronoUnit.MONTHS);
+        LocalDateTime oneMonthAgo = LocalDateTime.now().minus(1, ChronoUnit.MONTHS);
+
         //LocalDateTime oneMinuteAgo = LocalDateTime.now().minus(1, ChronoUnit.MINUTES);
         logger.info("Retrieving images older than one minute...");
 
         // Define the relative base path for image storage
         Path basePath = Paths.get("uploads", "images");
 
-        // Retrieve images older than one minute that are not compressed
+        // Retrieve images older than one month that are not compressed
         List<Post> posts = postRepository.findImagesToCompress(oneMonthAgo);
         logger.info("Number of images to compress: " + posts.size());
 
@@ -62,9 +63,6 @@ public class ImageCompressService {
         }
         logger.info("Image compressing process completed.");
     }
-
-
-
 
     private void compressImage(Path imagePath) throws IOException {
         File originalImageFile = imagePath.toFile();

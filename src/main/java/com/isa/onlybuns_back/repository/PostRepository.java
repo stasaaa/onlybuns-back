@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.Lock;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -20,8 +20,8 @@ import java.util.Optional;
 public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByUserId(Long userId);
 
-    @Query("SELECT p FROM Post p WHERE p.creationTime < :oneMonthAgo AND p.compressed = false")
-    List<Post> findImagesToCompress(LocalDate oneMonthAgo);
+    @Query("SELECT p FROM Post p WHERE p.creationTime < :time AND p.compressed = false")
+    List<Post> findImagesToCompress(@Param("time") LocalDateTime time);
 
     List<Post> findByCreationTimeAfter(Date date);
 
