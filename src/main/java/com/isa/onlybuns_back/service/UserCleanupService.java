@@ -12,7 +12,7 @@ public class UserCleanupService {
     private final UserRepository userRepository;
 
     // Cron for the last day in the month
-    // @Scheduled(cron = "0 */5 * * * *") cron for testing purposes - deletes accounts every 5 minutes
+  //   @Scheduled(cron = "0 */1 * * * *")
     @Scheduled(cron = "0 59 23 L * ?")
     public void deleteInactiveUsers() {
         userRepository.deleteAllInactiveUsers();

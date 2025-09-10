@@ -63,6 +63,7 @@ public class GroupChatService {
         return group;
     }
 
+
     public GroupChat removeMember(Long groupId, Long userId, String adminUsername) {
         GroupChat group = groupChatRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Group not found"));
@@ -78,14 +79,25 @@ public class GroupChatService {
             throw new SecurityException("Only admin can perform this action.");
         }
 
-        // Pronađi GroupChatMember za korisnika koji treba da se ukloni
         groupChatMemberRepository.findByGroupChatAndUser(group, userToRemove)
                 .ifPresent(groupChatMemberRepository::delete);
 
         sendSystemMessage(group, userToRemove.getUsername() + " is removed from the group chat.");
 
+        // Dodaj ovo:
+        // Pošalji privatnu WS poruku izbačenom korisniku
+        messagingTemplate.convertAndSend(
+                "/queue/user/" + userToRemove.getId(),
+                new MessageDTO(
+                        "You have been removed from the group.",
+                        "REMOVED",
+                        new Date()
+                )
+        );
+
         return group;
     }
+
 
     private void sendSystemMessage(GroupChat group, String content) {
         Message message = new Message();
@@ -114,7 +126,6 @@ public class GroupChatService {
         groupChat.setName(request.getGroupName());
         groupChat.setAdmin(admin);
 
-        // Sačuvaj grupu prvo da dobije ID
         GroupChat savedGroupChat = groupChatRepository.save(groupChat);
 
         if (!members.contains(admin)) {
@@ -130,12 +141,23 @@ public class GroupChatService {
             member.setUser(user);
             member.setJoinedAt(now);
             groupMembers.add(member);
+
+            // **Pošalji WS notifikaciju svakom članu da ima novu grupu**
+            messagingTemplate.convertAndSend(
+                    "/user/" + user.getId() + "/queue/groups",
+                    new GroupChatSummaryDto(
+                            savedGroupChat.getId(),
+                            savedGroupChat.getName(),
+                            groupMembers.size(),
+                            savedGroupChat.getAdmin().getUsername(),
+                            null
+                    )
+            );
+
         }
 
         groupChatMemberRepository.saveAll(groupMembers);
 
-        // Ne postavljaj savedGroupChat.setMembers(members) jer members su GroupChatMember, ne User
-        // Ako treba, možeš postaviti listu GroupChatMember u savedGroupChat.setMembers(groupMembers);
         savedGroupChat.setMembers(groupMembers);
 
         return savedGroupChat;
