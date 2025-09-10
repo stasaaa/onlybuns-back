@@ -47,6 +47,15 @@ public class PostService {
     }
 
     public PostDto create(PostDto postDto, String imagePath) throws IOException {
+        // validacija za duzinu opisa
+        String desc = postDto.getDescription();
+        if (desc == null || desc.trim().isEmpty()) {
+            throw new RuntimeException("Description cannot be empty.");
+        }
+        if (desc.length() > 250) {
+            throw new RuntimeException("Description cannot exceed 250 characters.");
+        }
+
         Post post = new Post();
         User user = userRepository.findById(postDto.getUserId()).orElse(null);
         if (user != null) {
