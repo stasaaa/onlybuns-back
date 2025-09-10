@@ -56,18 +56,25 @@ public class CommentRateLimitService {
 
         // dobijanje liste komentara za korisnika
         List<LocalDateTime> commentTimes = userCommentTimes.computeIfAbsent(userId, k -> new ArrayList<>());
+        System.out.println("=== COMMENT RATE LIMITER ===");
+        System.out.println("User " + userId + " comments before cleanup: " + commentTimes.size());
 
         // uklanjanje komentara starije od sat vremena
         commentTimes.removeIf(time -> time.isBefore(oneHourAgo));
 
         // provera da li korisnik moze da komentarise
-        return commentTimes.size() < MAX_COMMENTS_PER_HOUR;
+        boolean canComment = commentTimes.size() < MAX_COMMENTS_PER_HOUR;
+        System.out.println("User " + userId + " comments after cleanup: " + commentTimes.size() + "/" + MAX_COMMENTS_PER_HOUR);
+        System.out.println("Comment limiter allows: " + canComment);
+
+        return canComment;
     }
 
     public void recordComment(Long userId) {
         LocalDateTime now = LocalDateTime.now();
         List<LocalDateTime> commentTimes = userCommentTimes.computeIfAbsent(userId, k -> new ArrayList<>());
         commentTimes.add(now);
+        System.out.println("COMMENT: Recorded comment for user " + userId + " at " + now + " Total: " + commentTimes.size());
     }
 
     public int getRemainingComments(Long userId) {

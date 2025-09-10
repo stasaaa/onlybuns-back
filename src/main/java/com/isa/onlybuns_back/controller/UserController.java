@@ -11,17 +11,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.isa.onlybuns_back.service.FollowingService;
+import org.springframework.http.HttpStatus;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "users")
 public class UserController {
     private final UserService userService;
+    private final FollowingService followingService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, FollowingService followingService) {
         this.userService = userService;
+        this.followingService = followingService;
     }
 
     @GetMapping("{id}")
@@ -99,6 +104,22 @@ public class UserController {
     @GetMapping("/ten-users-liking-most-last-week")
     public ResponseEntity<List<UserDto>> getMostActiveUsers() {
         return ResponseEntity.ok(userService.getTopUsersLastWeek());
+    }
+
+    @GetMapping("/me/followed-ids")
+    public ResponseEntity<List<Long>> getFollowedUserIds(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String username = principal.getName();
+
+        List<Long> followedIds = followingService.getFollowedUsers(username)
+                .stream()
+                .map(UserDto::getId)
+                .toList();
+
+        return ResponseEntity.ok(followedIds);
     }
 }
 

@@ -13,7 +13,6 @@ import com.isa.onlybuns_back.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,6 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -34,16 +32,19 @@ public class PostService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final LikeRepository likeRepository;
+    private final LocationService locationService;
 
     @Autowired
     public PostService(PostRepository postRepository,
                        UserRepository userRepository,
                        FileStorageService fileStorageService,
-                       LikeRepository likeRepository) {
+                       LikeRepository likeRepository,
+                       LocationService locationService) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
         this.likeRepository = likeRepository;
+        this.locationService = locationService;
     }
 
     public PostDto create(PostDto postDto, String imagePath) throws IOException {
@@ -62,7 +63,9 @@ public class PostService {
             post.setUser(user);
             post.setDescription(postDto.getDescription());
             post.setImagePaths(imagePath);
-            post.setLocation(postDto.getAddress());
+            System.out.println("DEBUG: Pozivam locationService.cachePostLocation()");
+            Address cachedLocation = locationService.cachePostLocation(postDto.getAddress());
+            post.setLocation(cachedLocation);
             post.setCreationTime(new Date());
             post.setComments(new ArrayList<>());
 
@@ -140,7 +143,7 @@ public class PostService {
     public void toggleLike(Long postId, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        Post post = postRepository.findById(postId)
+        Post post = postRepository.findByIdForUpdate(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
         Optional<Like> existingLike = likeRepository.findByUserAndPost(user, post);
@@ -148,6 +151,14 @@ public class PostService {
             likeRepository.delete(existingLike.get());  // unlike
         } else {
             likeRepository.save(new Like(user, post));  // like
+        }
+
+        if ("test".equals(System.getProperty("spring.profiles.active"))) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 

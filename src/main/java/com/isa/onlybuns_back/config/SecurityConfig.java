@@ -92,7 +92,9 @@ public class SecurityConfig {
                                 "/actuator",
                                 "/actuator/**",
                                 "/api/admin/**",
-                                "/api/ad/**"
+                                "/api/ad/**",
+                                "/actuator/**",
+                                "/comments/rate-limit-status/**"
 
                         ).permitAll()
                         .anyRequest()
