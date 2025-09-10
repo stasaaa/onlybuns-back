@@ -89,6 +89,8 @@ public class SecurityConfig {
                                 "queue/**",
                                 "/posts/*/image",
                                 "/hello",
+                                "/actuator",
+                                "/actuator/**",
                                 "/api/admin/**",
                                 "/api/ad/**",
                                 "/actuator/**",
