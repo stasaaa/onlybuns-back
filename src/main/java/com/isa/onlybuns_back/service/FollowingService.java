@@ -23,7 +23,7 @@ public class FollowingService {
     private final FollowingRepository followingRepository;
     private final UserRepository userRepository;
 
-    // Evidencija po korisniku da se ograniči na max 50 praćenja u minuti
+
     private final Map<String, List<Long>> followTimestamps = new ConcurrentHashMap<>();
 
     private boolean canFollow(String username) {

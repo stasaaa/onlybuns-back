@@ -39,23 +39,31 @@ public class ConcurrentFollowTest {
 
     @BeforeEach
     void setUp() {
-        // očisti sve podatke da izbegneš FK constraint probleme
-        groupChatRepository.deleteAll();
         followingRepository.deleteAll();
-        userRepository.deleteAll();
 
-        // kreiraj target korisnika
+        targetUser = userRepository.findByUsername("target");
+        if (targetUser != null) {
+            userRepository.delete(targetUser);
+        }
+
         targetUser = new User("test@test.com", "target", "pass", "Target", "User",
                 UserRole.REGISTERED, new Date(), true, null, null);
         userRepository.save(targetUser);
 
-        // kreiraj 20 followera
+        List<User> testFollowers = new ArrayList<>();
+
         for (int i = 0; i < 20; i++) {
-            User follower = new User("follower" + i + "@test.com", "follower" + i, "pass",
+            User follower = userRepository.findByUsername("follower" + i);
+            if (follower != null) {
+                userRepository.delete(follower);
+            }
+            follower = new User("follower" + i + "@test.com", "follower" + i, "pass",
                     "F", "L", UserRole.REGISTERED, new Date(), true, null, null);
             userRepository.save(follower);
+            testFollowers.add(follower);
         }
     }
+
 
     @Test
     void testConcurrentFollow() throws InterruptedException {
