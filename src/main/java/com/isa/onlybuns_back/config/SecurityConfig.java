@@ -90,6 +90,7 @@ public class SecurityConfig {
                                 "/hello",
                                 "/api/ad/**",
                                 "/following/{username}/followers",
+                                "/following/{username}/followers/{count}",
                                 "/following/is-following/{username}",
                                 "/posts/user/{userId}",
                                 "comments/user/{userId}",
