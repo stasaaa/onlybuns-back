@@ -2,7 +2,6 @@ package com.isa.onlybuns_back.controller;
 
 import com.isa.onlybuns_back.dto.UpdateUserProfileDto;
 import com.isa.onlybuns_back.dto.UserDto;
-import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -96,6 +94,11 @@ public class UserController {
     @PostMapping("")
     public ResponseEntity<UserDto> updateProfile(@Valid @RequestBody UpdateUserProfileDto updateProfileInfo) {
         return ResponseEntity.ok(userService.updateUser(updateProfileInfo));
+    }
+
+    @GetMapping("/ten-users-liking-most-last-week")
+    public ResponseEntity<List<UserDto>> getMostActiveUsers() {
+        return ResponseEntity.ok(userService.getTopUsersLastWeek());
     }
 }
 

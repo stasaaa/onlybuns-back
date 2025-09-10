@@ -26,7 +26,7 @@ public class AdService {
         adMessage.setUsername(post.getUser().getUsername()); // Pretpostavka da Post ima referencu na autora
 
         // URL brokera za fanout komunikaciju
-        String url = "http://localhost:8081/queue/send/fanout/" + FANOUT_EXCHANGE_NAME;
+        String url = "http://localhost:8083/queue/send/fanout/" + FANOUT_EXCHANGE_NAME;
 
         try {
             // Slanje poruke na broker
