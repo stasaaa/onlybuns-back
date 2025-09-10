@@ -13,27 +13,21 @@ public class RateLimiterService {
 
     // userId -> lista timestampova zahteva
     private final ConcurrentHashMap<Long, List<LocalDateTime>> userRequestTimes = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, LocalDateTime> lastCleanupTime = new ConcurrentHashMap<>();
 
     public boolean canMakeRequest(Long userId) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneMinuteAgo = now.minusMinutes(1);
-
-        // lista zahteva za korisnika
+        cleanupIfNeeded(userId); // POZOVI cleanup umesto direktno removeIf()
         List<LocalDateTime> requestTimes = userRequestTimes.computeIfAbsent(userId, k -> new ArrayList<>());
-        System.out.println("=== GENERAL RATE LIMITER ===");
-        System.out.println("User " + userId + " requests before cleanup: " + requestTimes.size());
-
-        // uklanjanje zahteva starijih od minut vremena
-        requestTimes.removeIf(time -> time.isBefore(oneMinuteAgo));
-
         boolean canMake = requestTimes.size() < MAX_REQUESTS_PER_MINUTE;
-        System.out.println("User " + userId + " requests after cleanup: " + requestTimes.size() + "/" + MAX_REQUESTS_PER_MINUTE);
+
+        System.out.println("=== GENERAL RATE LIMITER ===");
+        System.out.println("User " + userId + " requests: " + requestTimes.size() + "/" + MAX_REQUESTS_PER_MINUTE);
         System.out.println("General limiter allows: " + canMake);
 
         return canMake;
     }
 
-    public void recordRequest(Long userId) {
+    public synchronized void recordRequest(Long userId) {
         LocalDateTime now = LocalDateTime.now();
         List<LocalDateTime> requestTimes = userRequestTimes.computeIfAbsent(userId, k -> new ArrayList<>());
         requestTimes.add(now);
@@ -41,17 +35,12 @@ public class RateLimiterService {
     }
 
     public int getRemainingRequests(Long userId) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneMinuteAgo = now.minusMinutes(1);
-
         List<LocalDateTime> requestTimes = userRequestTimes.computeIfAbsent(userId, k -> new ArrayList<>());
-        requestTimes.removeIf(time -> time.isBefore(oneMinuteAgo));
 
         return MAX_REQUESTS_PER_MINUTE - requestTimes.size();
     }
 
     // vreme kada ce korisnik moci opet da posalje zahtev
-
     public LocalDateTime getNextAvailableTime(Long userId) {
         List<LocalDateTime> requestTimes = userRequestTimes.get(userId);
         if (requestTimes == null || requestTimes.size() < MAX_REQUESTS_PER_MINUTE) {
@@ -65,4 +54,31 @@ public class RateLimiterService {
         return oldestRequest.plusMinutes(1);
     }
 
+    private synchronized void cleanupIfNeeded(Long userId) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime lastCleanup = lastCleanupTime.get(userId);
+
+        // cisti samo ako je proslo više od 10 sekundi od poslednjeg cleanup-a
+        if (lastCleanup == null || lastCleanup.isBefore(now.minusSeconds(10))) {
+            LocalDateTime oneMinuteAgo = now.minusMinutes(1);
+            List<LocalDateTime> requestTimes = userRequestTimes.get(userId);
+
+            if (requestTimes != null) {
+                int sizeBefore = requestTimes.size();
+                requestTimes.removeIf(time -> time.isBefore(oneMinuteAgo));
+                int sizeAfter = requestTimes.size();
+
+                if (requestTimes.isEmpty()) {
+                    userRequestTimes.remove(userId);
+                    lastCleanupTime.remove(userId);
+                } else {
+                    lastCleanupTime.put(userId, now);
+                }
+
+                if (sizeBefore != sizeAfter) {
+                    System.out.println("CLEANUP: User " + userId + " cleaned " + (sizeBefore - sizeAfter) + " old requests");
+                }
+            }
+        }
+    }
 }
