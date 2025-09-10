@@ -32,6 +32,6 @@ public class AdController {
         }
 
         adService.sendAdMessage(post);
-        return ResponseEntity.ok("Objava #" + postId + " odobrena za reklamiranje.");
+        return ResponseEntity.ok("Post suggested for advertising!");
     }
 }
