@@ -1,6 +1,7 @@
 package com.isa.onlybuns_back.controller;
 
 import com.isa.onlybuns_back.dto.CommentDto;
+import com.isa.onlybuns_back.repository.CommentRepository;
 import com.isa.onlybuns_back.service.CommentRateLimitService;
 import com.isa.onlybuns_back.service.CommentService;
 import jakarta.validation.Valid;
@@ -84,5 +85,10 @@ public class CommentController {
         rateLimitService.recordComment(userId);
 
         return ResponseEntity.ok(createdComment);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<CommentDto>> getForUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(commentService.getCommentsForUser(userId));
     }
 }
