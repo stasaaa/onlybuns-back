@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import com.isa.onlybuns_back.service.FollowingService;
 import org.springframework.http.HttpStatus;
@@ -30,16 +31,19 @@ public class UserController {
     }
 
     @GetMapping("{id}")
+    @PreAuthorize("isAuthenticated()")
     public UserDto findById(@PathVariable long id) {
         return userService.findById(id);
     }
 
     @GetMapping("findUsername/{id}")
+    @PreAuthorize("isAuthenticated()")
     public String findUsername(@PathVariable long id) {
         return userService.findUsername(id);
     }
 
     @GetMapping("find/{username}")
+    @PreAuthorize("isAuthenticated()")
     public UserDto findByUsername(@PathVariable String username) {
         return userService.findByUsername(username);
     }
@@ -97,11 +101,13 @@ public class UserController {
     }
 
     @PostMapping("")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserDto> updateProfile(@Valid @RequestBody UpdateUserProfileDto updateProfileInfo) {
         return ResponseEntity.ok(userService.updateUser(updateProfileInfo));
     }
 
     @GetMapping("/ten-users-liking-most-last-week")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<UserDto>> getMostActiveUsers() {
         return ResponseEntity.ok(userService.getTopUsersLastWeek());
     }

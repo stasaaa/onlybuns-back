@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import com.isa.onlybuns_back.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
@@ -34,6 +35,7 @@ public class PostController {
     }
 
     @PostMapping("create")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PostDto> createPost(
             @RequestParam("userId") long userId,
             @RequestParam("description") String description,
@@ -56,6 +58,7 @@ public class PostController {
     }
 
     @GetMapping("{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PostDto> getPost(@PathVariable long id) throws IOException {
         PostDto ret = postService.findById(id);
         if(ret == null) {
@@ -122,22 +125,26 @@ public class PostController {
     }
 
     @GetMapping("post-quantity")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Long>> getPostQuantity() {
         Map<String, Long> postQuantity = postService.getPostQuantity();
         return ResponseEntity.ok(postQuantity);
     }
 
     @GetMapping("five-most-liked-last-week")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Collection<PostDto>> getFiveMostLikedLastWeek() throws IOException {
         return ResponseEntity.ok(postService.getFiveMostLikedLastWeek());
     }
 
     @GetMapping("top-ten")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Collection<PostDto>> getTopTenPosts() throws IOException {
         return ResponseEntity.ok(postService.getTopTenMostLikedPosts());
     }
 
     @GetMapping("pagedForUser/{username}/{page}/{pageSize}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Collection<PostDto>> getPaged(
             @PathVariable int page, @PathVariable int pageSize, @PathVariable String username)
             throws IOException {
@@ -145,6 +152,7 @@ public class PostController {
     }
 
     @GetMapping("near-me")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Collection<PostDto>> getNearMe(
             @RequestParam String address, @RequestParam int page, @RequestParam int pageSize) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();

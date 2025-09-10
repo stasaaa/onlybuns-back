@@ -39,7 +39,6 @@ public class RabbitLocationConsumerService {
                 RabbitLocationMessage locationDto = response.getBody();
                 System.out.printf("PRIMLJENO (Direct): Lokacija '%s' (%.4f, %.4f) primljena.\n", locationDto.getName(), locationDto.getLatitude(), locationDto.getLongitude());
 
-                // Čuvanje poruke u bazu podataka
                 RabbitCareLocation locationEntity = new RabbitCareLocation();
                 locationEntity.setName(locationDto.getName());
                 locationEntity.setLatitude(locationDto.getLatitude());
@@ -48,7 +47,7 @@ public class RabbitLocationConsumerService {
                 System.out.println("Lokacija uspešno sačuvana u bazi.");
             }
         } catch (Exception e) {
-            // Ignoriše greške ako je red prazan ili servis nedostupan
+            System.out.println(e.getMessage());
         }
     }
 
