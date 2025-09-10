@@ -90,7 +90,9 @@ public class SecurityConfig {
                                 "/posts/*/image",
                                 "/hello",
                                 "/api/admin/**",
-                                "/api/ad/**"
+                                "/api/ad/**",
+                                "/actuator/**",
+                                "/comments/rate-limit-status/**"
 
                         ).permitAll()
                         .anyRequest()
