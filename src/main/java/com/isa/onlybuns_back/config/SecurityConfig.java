@@ -86,10 +86,19 @@ public class SecurityConfig {
                                 "/users",
                                 "/users/all",
                                 "/ws/**",
-                                "queue/**",
                                 "/posts/*/image",
                                 "/hello",
-                                "/api/ad/**"
+                                "/api/ad/**",
+                                "/following/{username}/followers",
+                                "/following/is-following/{username}",
+                                "/posts/user/{userId}",
+                                "comments/user/{userId}",
+                                "/actuator",
+                                "/actuator/**",
+                                "/api/admin/**",
+                                "/api/ad/**",
+                                "/actuator/**",
+                                "/comments/rate-limit-status/**"
 
                         ).permitAll()
                         .anyRequest()

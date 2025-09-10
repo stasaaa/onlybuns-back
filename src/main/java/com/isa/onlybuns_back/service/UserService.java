@@ -126,4 +126,8 @@ public class UserService {
         return topUsers.stream()
                 .map(UserMapper::toDto).toList();
     }
+
+    public User getEntityByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
 }
