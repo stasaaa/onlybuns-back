@@ -89,7 +89,8 @@ public class SecurityConfig {
                                 "queue/**",
                                 "/posts/*/image",
                                 "/hello",
-                                "/api/admin/**"
+                                "/api/admin/**",
+                                "/api/ad/**"
 
                         ).permitAll()
                         .anyRequest()

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,4 +21,11 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     List<Post> findPostsLikedByUser(@Param("user") User user);
     boolean existsByUserIdAndPostId(Long userId, Long postId);
 
-}
+    @Query("""
+        SELECT l.user.id
+        FROM Like l 
+        WHERE l.likedAt >= :oneWeekAgo 
+        GROUP BY l.user.id 
+        ORDER BY COUNT(l) DESC
+    """)
+    List<Long> findTopUserIdsByLikesSince(@Param("oneWeekAgo") Date oneWeekAgo);}

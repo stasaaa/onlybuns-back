@@ -4,12 +4,12 @@ import com.isa.onlybuns_back.dto.UpdateUserProfileDto;
 import com.isa.onlybuns_back.dto.UserDto;
 import com.isa.onlybuns_back.mapper.UserMapper;
 import com.isa.onlybuns_back.model.User;
+import com.isa.onlybuns_back.repository.LikeRepository;
 import com.isa.onlybuns_back.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
@@ -17,8 +17,10 @@ import org.springframework.data.domain.Pageable;
 @Service
 public class UserService {
     private final UserRepository userRepository;
-    public UserService(UserRepository userRepository) {
+    private final LikeRepository likeRepository;
+    public UserService(UserRepository userRepository,  LikeRepository likeRepository) {
         this.userRepository = userRepository;
+        this.likeRepository = likeRepository;
     }
 
     public UserDto findById(Long id) {
@@ -106,5 +108,22 @@ public class UserService {
     }
 
 
+    public List<UserDto> getTopUsersLastWeek() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_YEAR, -7);
+        Date oneWeekAgo = cal.getTime();
 
+        List<Long> topUserIds = likeRepository.findTopUserIdsByLikesSince(oneWeekAgo)
+                .stream()
+                .limit(10)
+                .toList();
+
+        List<User> topUsers = new ArrayList<>();
+        for (Long id : topUserIds) {
+            userRepository.findById(id).ifPresent(topUsers::add);
+        }
+
+        return topUsers.stream()
+                .map(UserMapper::toDto).toList();
+    }
 }

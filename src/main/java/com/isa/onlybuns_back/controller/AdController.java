@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/ad")
 public class AdController {
 
     private final PostRepository postRepository;
@@ -25,14 +25,12 @@ public class AdController {
 
     @PostMapping("/approve-ad/{postId}")
     public ResponseEntity<String> approvePostForAd(@PathVariable Long postId) {
-        // Logika za pronalazak objave
         Post post = postRepository.findById(postId).orElse(null);
 
         if (post == null) {
             return ResponseEntity.notFound().build();
         }
 
-        // Pozivanje servisa za slanje oglasne poruke
         adService.sendAdMessage(post);
         return ResponseEntity.ok("Objava #" + postId + " odobrena za reklamiranje.");
     }

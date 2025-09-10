@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -32,8 +33,7 @@ public class RabbitLocationConsumerService {
 
     private void pollForLocations() {
         try {
-            // POZIV NA BROKER DA SE PRIME PORUKE
-            ResponseEntity<RabbitLocationMessage> response = restTemplate.getForEntity("http://localhost:8081/queue/receive/rabbit-care-queue", RabbitLocationMessage.class);
+            ResponseEntity<RabbitLocationMessage> response = restTemplate.getForEntity("http://localhost:8083/queue/receive/rabbit-care-queue", RabbitLocationMessage.class);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 RabbitLocationMessage locationDto = response.getBody();
@@ -50,5 +50,9 @@ public class RabbitLocationConsumerService {
         } catch (Exception e) {
             // Ignoriše greške ako je red prazan ili servis nedostupan
         }
+    }
+
+    public List<RabbitCareLocation> getAllLocations() {
+        return locationRepository.findAll();
     }
 }

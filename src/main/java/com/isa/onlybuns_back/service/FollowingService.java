@@ -1,5 +1,7 @@
 package com.isa.onlybuns_back.service;
 
+import com.isa.onlybuns_back.dto.UserDto;
+import com.isa.onlybuns_back.mapper.UserMapper;
 import com.isa.onlybuns_back.model.Following;
 import com.isa.onlybuns_back.model.User;
 import com.isa.onlybuns_back.model.UserRole;
@@ -84,19 +86,21 @@ public class FollowingService {
         followingRepository.deleteByFollowerAndFollowed(follower, followed);
     }
 
-    public List<User> getFollowedUsers(String username) {
+    public List<UserDto> getFollowedUsers(String username) {
         User user = userRepository.findByUsername(username);
         return followingRepository.findAllByFollower(user)
                 .stream()
                 .map(Following::getFollowed)
+                .map(UserMapper::toDto)
                 .toList();
     }
 
-    public List<User> getFollowers(String username) {
+    public List<UserDto> getFollowers(String username) {
         User user = userRepository.findByUsername(username);
         return followingRepository.findAllByFollowed(user)
                 .stream()
                 .map(Following::getFollower)
+                .map(UserMapper::toDto)
                 .toList();
     }
 
