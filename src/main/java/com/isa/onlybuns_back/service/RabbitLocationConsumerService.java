@@ -27,9 +27,18 @@ public class RabbitLocationConsumerService {
 
     @PostConstruct
     public void startListening() {
+        try {
+            // probaj da vidiš da li je servis dostupan
+            restTemplate.getForEntity("http://localhost:8083/actuator/health", String.class);
+        } catch (Exception e) {
+            System.out.println("Rabbit side-app not active, skipping polling.");
+            return; // ovde prekidamo, scheduler se ne pokreće
+        }
+
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.scheduleAtFixedRate(this::pollForLocations, 0, 5, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(this::pollForLocations, 0, 30, TimeUnit.MINUTES);
     }
+
 
     private void pollForLocations() {
         try {
